@@ -69,5 +69,12 @@
   ],
   "interests": [],
   "references": [],
-  "projects": []
+  "projects": [
+    {
+      "name": "Website Development for a Student Association",
+      "summary": "Developed the backend using Spring with Java 21, integrated MySQL for data management, and implemented Redis for caching. Deployed the application with Docker, configured Nginx as a reverse proxy in an Ubuntu server. Set up monitoring with Prometheus and Grafana, and performed load testing using Grafana k6. Utilized Cloudflare to enhance security and optimize performance.",
+      "highlights": ["Java", "MySQL", "Redis", "Docker", "Nginx", "Ubuntu", "Prometheus", "Grafana", "Cloudflare"],
+      "startDate": "2024-02"
+    }
+  ]
 }
