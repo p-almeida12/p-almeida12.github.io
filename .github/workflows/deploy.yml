@@ -43,6 +43,8 @@ jobs:
         purgecss -c purgecss.config.js
     - name: Fix permission
       run: |
+        git config user.email "p.almeida12@hotmail.com"
+        git config user.name "Paulo Almeida"
         chmod a+x bin/*
         git commit -am "add execute permission to bin/deploy"
     - name: Deploy 🚀
