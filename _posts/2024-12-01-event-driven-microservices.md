@@ -82,7 +82,7 @@ Kafka follows a distributed, publish-subscribe architecture with a few key compo
 </div>
 
 <div class="caption">
-    Figure 4 - Apache Kafka Architecture
+    Figure 1 - Apache Kafka Architecture
 </div>
 
 ### Producer
@@ -254,7 +254,7 @@ consumers. These components work together to provide a robust, reliable messagin
 </div>
 
 <div class="caption">
-    Figure 4 - RabbitMQ Architecture
+    Figure 2 - RabbitMQ Architecture
 </div>
 
 ### Producer
@@ -395,51 +395,51 @@ These options allow developers to implement complex routing rules, making Rabbit
 
 #### Kafka
 
-- Message Failures: Kafka’s approach is based on retries and offset management. If a consumer fails to process a message, 
+- **Message Failures**: Kafka’s approach is based on retries and offset management. If a consumer fails to process a message, 
 it can adjust its offset to reprocess the message. This makes error handling flexible but relies on developers to 
 implement the correct retry logic.
-- Dead Letter Queues: Kafka doesn’t natively support DLQs but provides mechanisms to implement them. For example, 
+- **Dead Letter Queues**: Kafka doesn’t natively support DLQs but provides mechanisms to implement them. For example, 
 failed messages can be redirected to a separate "dead letter topic" using stream processing frameworks like Kafka 
 Streams or with a custom consumer.
 
 #### RabbitMQ
 
-- Message Failures: RabbitMQ includes built-in support for message acknowledgments. If a consumer fails to acknowledge 
+- **Message Failures**: RabbitMQ includes built-in support for message acknowledgments. If a consumer fails to acknowledge 
 a message, RabbitMQ can requeue it for a configurable amount of times or send it to a Dead Letter Exchange (DLX).
-- Dead Letter Queues: RabbitMQ’s DLX is an exchange where rejected messages are routed. This feature is straightforward 
+- **Dead Letter Queues**: RabbitMQ’s DLX is an exchange where rejected messages are routed. This feature is straightforward 
 to configure by setting specific queue parameters (x-dead-letter-exchange) to handle undeliverable messages.
 
 ### Message Ordering and Idempotency
 
 #### Kafka
 
-- Ordered Processing: Kafka ensures ordering within a partition. Producers decide the partition for each message, 
+- **Ordered Processing**: Kafka ensures ordering within a partition. Producers decide the partition for each message, 
 and messages within the same partition are processed in the order they arrive. Consumer groups distribute partitions 
 among consumers, maintaining order at the partition level.
-- Idempotency: Kafka supports idempotent producers to ensure that duplicate messages are not produced, even in retry 
+- **Idempotency**: Kafka supports idempotent producers to ensure that duplicate messages are not produced, even in retry 
 scenarios. This is particularly useful for applications that require strict once-only delivery semantics.
 
 #### RabbitMQ
 
-- Ordered Processing: RabbitMQ does not guarantee message ordering, especially when using multiple consumers for a queue. 
+- **Ordered Processing**: RabbitMQ does not guarantee message ordering, especially when using multiple consumers for a queue. 
 Message ordering can break due to acknowledgments being processed out of sequence or consumer distribution.
-- Idempotency: RabbitMQ leaves idempotency handling to the application layer. Developers must implement mechanisms to 
+- **Idempotency**: RabbitMQ leaves idempotency handling to the application layer. Developers must implement mechanisms to 
 detect and handle duplicate messages, often by using unique message identifiers.
 
 ### Replication and Disaster Recovery
 
 #### Kafka
 
-- Partition Replication: Kafka ensures high availability through partition replication. Each partition has a leader 
+- **Partition Replication**: Kafka ensures high availability through partition replication. Each partition has a leader 
 and multiple followers. If the leader fails, one of the followers takes over.
-- Failover Scenarios: Kafka’s ZooKeeper (or KRaft in newer versions) automatically manages leader election during 
+- **Failover Scenarios**: Kafka’s ZooKeeper (or KRaft in newer versions) automatically manages leader election during 
 failover. This ensures minimal disruption to message processing.
 
 #### RabbitMQ
 
-- Mirrored Queues: RabbitMQ offers mirrored queues to replicate messages across multiple nodes. If the primary node 
+- **Mirrored Queues**: RabbitMQ offers mirrored queues to replicate messages across multiple nodes. If the primary node 
 fails, a replica can take over.
-- Failover Scenarios: Failover in RabbitMQ depends on clustering. While it provides high availability, managing clusters 
+- **Failover Scenarios**: Failover in RabbitMQ depends on clustering. While it provides high availability, managing clusters 
 can be complex, especially for large-scale deployments.
 
 ## Hybrid Architectures
@@ -542,8 +542,6 @@ uploads, and moderating content.
 
 
 ## Conclusion
-
-MENCIONAR O RABBITMQ QUE UTILIZEI NO SAG E TAMBEM MENCIONAR O REPO DE EVENT DRIVEN COM KAFKA
 
 <span style="margin-left: 10px;"></span>
 Choosing between Apache Kafka and RabbitMQ isn’t just a technical decision—it’s about understanding the system’s 
