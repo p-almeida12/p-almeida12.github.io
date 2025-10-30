@@ -22,10 +22,10 @@
   "work": [
     {
       "name": "ePharma",
-      "position": "Application Developer Specialist",
-      "startDate": "1933-01-01",
-      "endDate": "1955-01-01",
-      "summary": "• Development of microservices using Java 17, Spring, MySQL and NoSQL. Interaction with an international team for maintenance and implementation of data communication strategies between the company's application and the client. Development of a REST API to manage commercial policies within the pharmaceutical industry using tools such as Spring Framework and NoSQL.",
+      "position": "Backend Developer",
+      "startDate": "2022-09-30",
+      "endDate": "",
+      "summary": "• Development of microservices using Java 17/21/22, Spring, MySQL and NoSQL. Interaction with an international team for maintenance and implementation of data communication strategies between the company's application and the client. Development of a REST API to manage commercial policies within the pharmaceutical industry using tools such as Spring Framework and NoSQL.",
       "highlights": [
         "Java", "Spring Framework", "SQL", "NoSQL", "Microservices", "REST"
       ]
@@ -37,7 +37,7 @@
       "institution": "Instituto Superior de Engenharia do Porto",
       "url": "https://www.isep.ipp.pt/",
       "area": "Biomedical Engineering",
-      "studyType": "Licentiate Degree",
+      "studyType": "Bachelor's Degree",
       "startDate": "2019-09",
       "endDate": "2022-10",
       "score": "",
@@ -47,9 +47,9 @@
       "institution": "Instituto Superior de Engenharia do Porto",
       "url": "https://www.isep.ipp.pt/",
       "area": "Biomedical Engineering",
-      "studyType": "Masters Degree",
+      "studyType": "Master's Degree",
       "startDate": "2022-10",
-      "endDate": "",
+      "endDate": "2025-10",
       "score": "",
       "courses": []
     }

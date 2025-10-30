@@ -17,6 +17,6 @@ selected_papers: false # includes a list of papers marked as "selected={true}"
 social: true  # includes social icons at the bottom of the page
 ---
 
-Currently doing a Master’s Degree in Biomedical Engineering. Working as a junior programmer at ePharma.
+Master’s Degree in Biomedical Engineering. Working as a backend developer at ePharma.
 
 Always willing to learn and grow as an individual and as a professional.
