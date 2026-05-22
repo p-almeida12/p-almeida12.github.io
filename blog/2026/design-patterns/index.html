@@ -1,0 +1,656 @@
+<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <title>Design Patterns I Use in Backend Java | Paulo Almeida</title> <meta name="author" content="Paulo Almeida"> <meta name="description" content="Practical backend Java patterns focused on reusability and maintainability."> <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website"> <link rel="stylesheet" href="/assets/css/bootstrap.min.css?a4b3f509e79c54a512b890d73235ef04"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/css/mdb.min.css" integrity="sha256-jpjYvU3G3N6nrrBwXJoVEYI/0zw8htfFnhT9ljN3JJw=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.22.1/dist/bootstrap-table.min.css"> <link rel="stylesheet" href="/assets/css/academicons.min.css?f0b7046b84e425c55f3463ac249818f5"> <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons"> <link rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?19f3075a2d19613090fe9e16b564e1fe" media="" id="highlight_theme_light"> <link rel="shortcut icon" href="data:image/svg+xml,&lt;svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22&gt;&lt;text%20y=%22.9em%22%20font-size=%2290%22&gt;%F0%9F%8C%90&lt;/text&gt;&lt;/svg&gt;"> <link rel="stylesheet" href="/assets/css/main.css?d41d8cd98f00b204e9800998ecf8427e"> <link rel="canonical" href="https://p-almeida12.github.io/blog/2026/design-patterns/"> <link rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?e74e74bf055e5729d44a7d031a5ca6a5" media="none" id="highlight_theme_dark"> <script src="/assets/js/theme.js?96d6b3e1c3604aca8b6134c7afdd5db6"></script> <script src="/assets/js/dark_mode.js?9b17307bb950ffa2e34be0227f53558f"></script> </head> <body class="fixed-top-nav "> <header> <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top"> <div class="container"> <a class="navbar-brand title font-weight-lighter" href="/"><span class="font-weight-bold">Paulo </span>Almeida</a> <button class="navbar-toggler collapsed ml-auto" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar top-bar"></span> <span class="icon-bar middle-bar"></span> <span class="icon-bar bottom-bar"></span> </button> <div class="collapse navbar-collapse text-right" id="navbarNav"> <ul class="navbar-nav ml-auto flex-nowrap"> <li class="nav-item "> <a class="nav-link" href="/">about</a> </li> <li class="nav-item active"> <a class="nav-link" href="/blog/">blog<span class="sr-only">(current)</span></a> </li> <li class="nav-item "> <a class="nav-link" href="/cv/">cv</a> </li> <li class="toggle-container"> <button id="light-toggle" title="Change theme"> <i class="fas fa-moon"></i> <i class="fas fa-sun"></i> </button> </li> </ul> </div> </div> </nav> <progress id="progress" value="0"> <div class="progress-container"> <span class="progress-bar"></span> </div> </progress> </header> <div class="container mt-5"> <div class="post"> <header class="post-header"> <h1 class="post-title">Design Patterns I Use in Backend Java</h1> <p class="post-meta">February 25, 2026</p> <p class="post-tags"> <a href="/blog/2026"> <i class="fas fa-calendar fa-sm"></i> 2026 </a> </p> </header> <article class="post-content"> <div id="table-of-contents"> <ul id="toc" class="section-nav"> <li class="toc-entry toc-h2"><a href="#introduction">Introduction</a></li> <li class="toc-entry toc-h2"> <a href="#example-domain">Example Domain</a> <ul> <li class="toc-entry toc-h3"><a href="#main-domain-objects">Main Domain Objects</a></li> </ul> </li> <li class="toc-entry toc-h2"><a href="#3-strategy-pattern--handling-different-beer-payment-providers">3. Strategy Pattern — Handling Different Beer Payment Providers</a></li> <li class="toc-entry toc-h2"> <a href="#4-factory-pattern--creating-beer-notification-handlers">4. Factory Pattern — Creating Beer Notification Handlers</a> <ul> <li class="toc-entry toc-h3"><a href="#factory-vs-strategy">Factory vs Strategy</a></li> </ul> </li> <li class="toc-entry toc-h2"> <a href="#5-repository-pattern">5. Repository Pattern</a> <ul> <li class="toc-entry toc-h3"><a href="#what-should-not-go-into-a-repository">What Should Not Go Into a Repository</a></li> </ul> </li> <li class="toc-entry toc-h2"><a href="#6-combining-the-patterns-in-one-backend-flow">6. Combining the Patterns in One Backend Flow</a></li> <li class="toc-entry toc-h2"> <a href="#7-reusable-shared-libraries-and-components">7. Reusable Shared Libraries and Components</a> <ul> <li class="toc-entry toc-h3"><a href="#reusable-does-not-mean-generic-too-early">Reusable Does Not Mean Generic Too Early</a></li> </ul> </li> <li class="toc-entry toc-h2"><a href="#conclusion">Conclusion</a></li> </ul> </div> <hr> <div id="markdown-content"> <p><span style="margin-left: 10px;"></span></p> <h2 id="introduction">Introduction</h2> <p><span style="margin-left: 10px;"></span> For me, design patterns in backend Java are not about making the code look “advanced”. They are about solving practical problems that appear over and over again in real backend systems:</p> <ul> <li>How do I avoid repeating the same conditional logic everywhere?</li> <li>How do I add new behavior without rewriting existing code?</li> <li>How do I keep business logic away from persistence details?</li> <li>How do I make code easier to test?</li> <li>How do I extract reusable components without creating a generic mess?</li> </ul> <p><span style="margin-left: 10px;"></span> That is where design patterns are still useful. Not as theory or as decoration, but as tools I can actually use.</p> <p><span style="margin-left: 10px;"></span> In backend Java, especially in applications built with Spring Boot, patterns like Strategy, Factory, and Repository appear naturally. You notice that the code is becoming harder to change, and then you introduce a structure that makes the next change easier. That is the practical value of design patterns.</p> <p><span style="margin-left: 10px;"></span> Imagine we are building a backend system for an online beer shop. Customers can browse beers, place orders, pay using different providers, and receive notifications when their order is confirmed. Something like this:</p> <ul> <li>Customers browse beers</li> <li>Customers place beer orders</li> <li>Payments can be made through different providers</li> <li>Notifications can be sent through different channels</li> <li>Beer data is stored in a database</li> <li>Shared logic is reused across services</li> </ul> <p><span style="margin-left: 10px;"></span> At the beginning, the system might look simple. Maybe we only support one payment provider.</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">BeerOrderService</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">placeOrder</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">chargeWithStripe</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+        <span class="n">sendEmailConfirmation</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+        <span class="n">saveOrder</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">chargeWithStripe</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Charging beer order with Stripe"</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">sendEmailConfirmation</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Sending beer order confirmation email"</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">saveOrder</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Saving beer order"</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> This is not necessarily bad code, for a small application, it might be the perfect solution. The problem starts when the requirements change (oh and they do!). A few weeks later, the business wants to support PayPal or credits. Then email notifications are not enough, so we add SMS. Then different beer types need different validation rules, for example for alcohol content. Suddenly, the original service starts growing and we find ourselves with the great wall of if-else statements.</p> <p><span style="margin-left: 10px;"></span> I mean, it works, but the service now “knows” too much. It knows about payment providers, notification channels, order persistence, and business flow. Every time we add a new payment provider or notification channel, we have to modify this class. That means the class becomes harder to test, harder to maintain, and easier to break!</p> <p><span style="margin-left: 10px;"></span> For example, adding a new payment provider like BEER_WALLET means opening BeerOrderService again and changing the if/else chain.</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="o">(</span><span class="s">"BEER_WALLET"</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">paymentProvider</span><span class="o">))</span> <span class="o">{</span>
+    <span class="n">chargeWithBeerWallet</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> In a real backend system, this pattern repeats everywhere. The same provider checks might appear in the order service, refund service, invoice service, payment audit service, and customer support service. That is how duplication spreads and once duplication spreads, the codebase becomes expensive to change.</p> <p><span style="margin-left: 10px;"></span> This is where design patterns become useful, where the goal is not to “apply patterns” just because it is how others say it should be done. The goal is to move responsibilities into the right places. Instead of one service knowing every payment implementation, we can use the Strategy Pattern and model each payment provider as a separate strategy. Instead of scattering notification creation logic across the application, we can use the Factory Pattern to resolve the correct notification handler. Instead of mixing database access with business logic, we can use the Repository Pattern to isolate persistence concerns. And the result is code that can grow independently.</p> <p><span style="margin-left: 10px;"></span> In this article, I will focus on three design patterns I regularly use in backend Java development.</p> <ol> <li>Strategy Pattern - Used when the application needs to choose between different behaviors.</li> <li>Factory Pattern - Used when the application needs to create or resolve the right implementation.</li> <li>Repository Pattern - Used when the application needs a clean boundary around database access.</li> </ol> <p><span style="margin-left: 10px;"></span> One important thing before going further, design patterns should usually appear as a response to a real problem. I do not start a backend service by creating ten interfaces because “maybe one day” there will be multiple implementations. For example, if the beer shop only supports Stripe and there is no plan to support anything else, this might be enough:</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BeerPaymentService</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="nc">PaymentResult</span> <span class="nf">pay</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Charging beer order with Stripe"</span><span class="o">);</span>
+
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">PaymentResult</span><span class="o">(</span>
+            <span class="s">"stripe-transaction-id"</span><span class="o">,</span>
+            <span class="nc">PaymentStatus</span><span class="o">.</span><span class="na">SUCCESS</span>
+        <span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> This is simple and enough and the same idea applies to reusable components.</p> <p><span style="margin-left: 10px;"></span> Reusability is valuable, but only when we extract the right things. For example, this kind of duplicated beer price calculation is a good candidate for reuse:</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">BigDecimal</span> <span class="n">total</span> <span class="o">=</span> <span class="n">beer</span><span class="o">.</span><span class="na">price</span><span class="o">()</span>
+    <span class="o">.</span><span class="na">multiply</span><span class="o">(</span><span class="nc">BigDecimal</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">quantity</span><span class="o">))</span>
+    <span class="o">.</span><span class="na">multiply</span><span class="o">(</span><span class="nc">BigDecimal</span><span class="o">.</span><span class="na">ONE</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">taxRate</span><span class="o">));</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> If this logic appears in the order service, invoice service, refund service, and reporting service, then extracting it makes sense.</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">BeerPriceCalculator</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="nf">BeerPriceCalculator</span><span class="o">()</span> <span class="o">{</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="nc">BigDecimal</span> <span class="nf">calculateTotal</span><span class="o">(</span>
+        <span class="nc">BigDecimal</span> <span class="n">unitPrice</span><span class="o">,</span>
+        <span class="kt">int</span> <span class="n">quantity</span><span class="o">,</span>
+        <span class="nc">BigDecimal</span> <span class="n">taxRate</span>
+    <span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">unitPrice</span>
+            <span class="o">.</span><span class="na">multiply</span><span class="o">(</span><span class="nc">BigDecimal</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">quantity</span><span class="o">))</span>
+            <span class="o">.</span><span class="na">multiply</span><span class="o">(</span><span class="nc">BigDecimal</span><span class="o">.</span><span class="na">ONE</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">taxRate</span><span class="o">));</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> Now the logic has one home and that is useful reuse.</p> <p><span style="margin-left: 10px;"></span> A good use of a pattern should make the code easier to read once you understand the domain. For example:</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">PaymentStrategy</span> <span class="n">paymentStrategy</span> <span class="o">=</span>
+<span class="n">paymentStrategyResolver</span><span class="o">.</span><span class="na">resolve</span><span class="o">(</span><span class="n">order</span><span class="o">.</span><span class="na">paymentProvider</span><span class="o">());</span>
+
+<span class="nc">PaymentResult</span> <span class="n">result</span> <span class="o">=</span> <span class="n">paymentStrategy</span><span class="o">.</span><span class="na">pay</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> The order service does not need to know how Stripe works, how PayPal works, or how credits are validated. It only needs to know that the selected payment strategy can process the beer order. That is a useful abstraction. The same applies here:</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">BeerNotificationHandler</span> <span class="n">handler</span> <span class="o">=</span>
+<span class="n">notificationFactory</span><span class="o">.</span><span class="na">getHandler</span><span class="o">(</span><span class="n">order</span><span class="o">.</span><span class="na">notificationChannel</span><span class="o">());</span>
+
+<span class="n">handler</span><span class="o">.</span><span class="na">send</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> The service does not care whether the notification is sent by email or SMS. It asks for the right handler and delegates the work. The abstraction has a purpose it keeps the main business flow clean.</p> <p><span style="margin-left: 10px;"></span> So the main idea of this article is simple:</p> <ul> <li>The Strategy Pattern helps us switch between different behaviors without filling services with conditional logic.</li> <li>The Factory Pattern helps us centralize the creation or resolution of the right implementation.</li> <li>The Repository Pattern helps us keep database access separate from business rules.</li> <li>And reusable components help us avoid repeating stable logic across different parts of the system.</li> </ul> <p><span style="margin-left: 10px;"></span> None of these ideas are new.</p> <h2 id="example-domain">Example Domain</h2> <p><span style="margin-left: 10px;"></span> Before jumping into the patterns, I want to define the domain we will use throughout the article. This matters because design patterns are easier to understand when they are connected to one consistent example.</p> <p><span style="margin-left: 10px;"></span> Imagine a backend system for a craft beer shop. This shop sells beers from different breweries. Customers can search the catalog, add beers to an order, pay for the order, and receive a confirmation.</p> <p><span style="margin-left: 10px;"></span> The important thing is that this system has several areas where design patterns naturally appear. For example:</p> <ul> <li>Payment providers vary.</li> <li>Notification channels vary.</li> <li>Database access should be isolated.</li> <li>Shared calculations should not be duplicated.</li> </ul> <p><span style="margin-left: 10px;"></span> That gives us a practical reason to use patterns like Strategy, Factory, and Repository. We are not adding patterns because the code needs to look sophisticated. We are adding them because the backend has real variation points.</p> <h3 id="main-domain-objects">Main Domain Objects</h3> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kn">import</span> <span class="nn">java.math.BigDecimal</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">record</span> <span class="nf">Beer</span><span class="o">(</span>
+    <span class="nc">Long</span> <span class="n">id</span><span class="o">,</span>
+    <span class="nc">String</span> <span class="n">name</span><span class="o">,</span>
+    <span class="nc">String</span> <span class="n">brewery</span><span class="o">,</span>
+    <span class="nc">BeerType</span> <span class="n">type</span><span class="o">,</span>
+    <span class="nc">BigDecimal</span> <span class="n">alcoholPercentage</span><span class="o">,</span>
+    <span class="nc">BigDecimal</span> <span class="n">price</span>
+<span class="o">)</span> <span class="o">{</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">enum</span> <span class="nc">BeerType</span> <span class="o">{</span>
+    <span class="no">IPA</span><span class="o">,</span>
+    <span class="no">STOUT</span><span class="o">,</span>
+    <span class="no">LAGER</span><span class="o">,</span>
+    <span class="no">PILSNER</span><span class="o">,</span>
+    <span class="no">SOUR</span><span class="o">,</span>
+    <span class="no">WHEAT</span><span class="o">,</span>
+    <span class="no">PORTER</span>
+<span class="o">}</span>
+</code></pre></div></div> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">java.math.BigDecimal</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">record</span> <span class="nf">BeerOrder</span><span class="o">(</span>
+    <span class="nc">Long</span> <span class="n">id</span><span class="o">,</span>
+    <span class="nc">Long</span> <span class="n">customerId</span><span class="o">,</span>
+    <span class="nc">List</span><span class="o">&lt;</span><span class="nc">BeerOrderItem</span><span class="o">&gt;</span> <span class="n">items</span><span class="o">,</span>
+    <span class="nc">BigDecimal</span> <span class="n">totalAmount</span><span class="o">,</span>
+    <span class="nc">BeerOrderStatus</span> <span class="n">status</span><span class="o">,</span>
+    <span class="nc">PaymentProvider</span> <span class="n">paymentProvider</span><span class="o">,</span>
+    <span class="nc">NotificationChannel</span> <span class="n">notificationChannel</span>
+<span class="o">)</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre></div></div> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">java.math.BigDecimal</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">record</span> <span class="nf">BeerOrderItem</span><span class="o">(</span>
+    <span class="nc">Long</span> <span class="n">beerId</span><span class="o">,</span>
+    <span class="nc">String</span> <span class="n">beerName</span><span class="o">,</span>
+    <span class="kt">int</span> <span class="n">quantity</span><span class="o">,</span>
+    <span class="nc">BigDecimal</span> <span class="n">unitPrice</span>
+<span class="o">)</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre></div></div> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="nc">BeerOrderStatus</span> <span class="o">{</span>
+    <span class="no">CREATED</span><span class="o">,</span>
+    <span class="no">PAID</span><span class="o">,</span>
+    <span class="no">PAYMENT_FAILED</span><span class="o">,</span>
+    <span class="no">CONFIRMED</span><span class="o">,</span>
+    <span class="no">CANCELLED</span>
+<span class="o">}</span>
+</code></pre></div></div> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="nc">PaymentProvider</span> <span class="o">{</span>
+    <span class="no">STRIPE</span><span class="o">,</span>
+    <span class="no">PAYPAL</span><span class="o">,</span>
+    <span class="no">BREWERY_CREDIT</span><span class="o">,</span>
+    <span class="no">CASH_ON_DELIVERY</span>
+<span class="o">}</span>
+</code></pre></div></div> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">record</span> <span class="nf">PaymentResult</span><span class="o">(</span>
+    <span class="nc">String</span> <span class="n">transactionId</span><span class="o">,</span>
+    <span class="nc">PaymentStatus</span> <span class="n">status</span><span class="o">,</span>
+    <span class="nc">String</span> <span class="n">message</span>
+<span class="o">)</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="nc">PaymentResult</span> <span class="nf">success</span><span class="o">(</span><span class="nc">String</span> <span class="n">transactionId</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">PaymentResult</span><span class="o">(</span>
+            <span class="n">transactionId</span><span class="o">,</span>
+            <span class="nc">PaymentStatus</span><span class="o">.</span><span class="na">SUCCESS</span><span class="o">,</span>
+            <span class="s">"Payment processed successfully"</span>
+        <span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="nc">PaymentResult</span> <span class="nf">failed</span><span class="o">(</span><span class="nc">String</span> <span class="n">message</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">PaymentResult</span><span class="o">(</span>
+            <span class="kc">null</span><span class="o">,</span>
+            <span class="nc">PaymentStatus</span><span class="o">.</span><span class="na">FAILED</span><span class="o">,</span>
+            <span class="n">message</span>
+        <span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="nc">PaymentStatus</span> <span class="o">{</span>
+    <span class="no">SUCCESS</span><span class="o">,</span>
+    <span class="no">FAILED</span>
+<span class="o">}</span>
+</code></pre></div></div> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="nc">NotificationChannel</span> <span class="o">{</span>
+    <span class="no">EMAIL</span><span class="o">,</span>
+    <span class="no">SMS</span><span class="o">,</span>
+    <span class="no">PUSH</span><span class="o">,</span>
+<span class="o">}</span>
+</code></pre></div></div> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">record</span> <span class="nf">Customer</span><span class="o">(</span>
+    <span class="nc">Long</span> <span class="n">id</span><span class="o">,</span>
+    <span class="nc">String</span> <span class="n">name</span><span class="o">,</span>
+    <span class="nc">String</span> <span class="n">email</span><span class="o">,</span>
+    <span class="nc">String</span> <span class="n">phoneNumber</span>
+<span class="o">)</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre></div></div> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">record</span> <span class="nf">BeerOrderRequest</span><span class="o">(</span>
+    <span class="nc">Long</span> <span class="n">customerId</span><span class="o">,</span>
+    <span class="nc">List</span><span class="o">&lt;</span><span class="nc">BeerOrderItemRequest</span><span class="o">&gt;</span> <span class="n">items</span><span class="o">,</span>
+    <span class="nc">PaymentProvider</span> <span class="n">paymentProvider</span><span class="o">,</span>
+    <span class="nc">NotificationChannel</span> <span class="n">notificationChannel</span>
+<span class="o">)</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre></div></div> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">record</span> <span class="nf">BeerOrderItemRequest</span><span class="o">(</span>
+    <span class="nc">Long</span> <span class="n">beerId</span><span class="o">,</span>
+    <span class="kt">int</span> <span class="n">quantity</span>
+<span class="o">)</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre></div></div> <h2 id="3-strategy-pattern--handling-different-beer-payment-providers">3. Strategy Pattern — Handling Different Beer Payment Providers</h2> <p><span style="margin-left: 10px;"></span> The Strategy Pattern is useful when we have multiple ways to do something and we need to pick one at runtime. In our beer shop, customers can pay using Stripe, PayPal, brewery credits, or cash on delivery. Without the Strategy Pattern, the order service would need to know how to handle each payment method.</p> <p><span style="margin-left: 10px;"></span> Let me show the problematic version first. Without Strategy, we might end up with something like this:</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BeerOrderServiceBeforeStrategy</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">placeOrder</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="nc">PaymentProvider</span><span class="o">.</span><span class="na">STRIPE</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">order</span><span class="o">.</span><span class="na">paymentProvider</span><span class="o">()))</span> <span class="o">{</span>
+            <span class="n">processStripePayment</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="nc">PaymentProvider</span><span class="o">.</span><span class="na">PAYPAL</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">order</span><span class="o">.</span><span class="na">paymentProvider</span><span class="o">()))</span> <span class="o">{</span>
+            <span class="n">processPayPalPayment</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="nc">PaymentProvider</span><span class="o">.</span><span class="na">BREWERY_CREDIT</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">order</span><span class="o">.</span><span class="na">paymentProvider</span><span class="o">()))</span> <span class="o">{</span>
+            <span class="n">processBreweryCreditPayment</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="nc">PaymentProvider</span><span class="o">.</span><span class="na">CASH_ON_DELIVERY</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">order</span><span class="o">.</span><span class="na">paymentProvider</span><span class="o">()))</span> <span class="o">{</span>
+            <span class="n">processCashOnDelivery</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="n">saveOrder</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">processStripePayment</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">//stripe-specific logic</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">processPayPalPayment</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">//PayPal-specific logic</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">processBreweryCreditPayment</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">//brewery credit-specific logic</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">processCashOnDelivery</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// cash on delivery-specific logic</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">saveOrder</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">//save order</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> This works, but the problem is obvious. Every payment provider is mixed into one service. The class knows too much about payment details. When we need to add a new provider or change Stripe logic, we have to open this service and modify it. We also have to test all the if-else branches and every payment logic is mixed together.</p> <p><span style="margin-left: 10px;"></span> The Strategy Pattern solves this by extracting each payment method into its own strategy.</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">PaymentStrategy</span> <span class="o">{</span>
+    <span class="nc">PaymentProvider</span> <span class="nf">provider</span><span class="o">();</span>
+    <span class="nc">PaymentResult</span> <span class="nf">pay</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> Now each payment provider has its own implementation:</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">StripePaymentStrategy</span> <span class="kd">implements</span> <span class="nc">PaymentStrategy</span> <span class="o">{</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">PaymentProvider</span> <span class="nf">provider</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="nc">PaymentProvider</span><span class="o">.</span><span class="na">STRIPE</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">PaymentResult</span> <span class="nf">pay</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Processing payment with Stripe for order "</span> <span class="o">+</span> <span class="n">order</span><span class="o">.</span><span class="na">id</span><span class="o">());</span>
+        <span class="k">return</span> <span class="nc">PaymentResult</span><span class="o">.</span><span class="na">success</span><span class="o">(</span><span class="s">"stripe-"</span> <span class="o">+</span> <span class="n">order</span><span class="o">.</span><span class="na">id</span><span class="o">());</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">PayPalPaymentStrategy</span> <span class="kd">implements</span> <span class="nc">PaymentStrategy</span> <span class="o">{</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">PaymentProvider</span> <span class="nf">provider</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="nc">PaymentProvider</span><span class="o">.</span><span class="na">PAYPAL</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">PaymentResult</span> <span class="nf">pay</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Processing payment with PayPal for order "</span> <span class="o">+</span> <span class="n">order</span><span class="o">.</span><span class="na">id</span><span class="o">());</span>
+        <span class="k">return</span> <span class="nc">PaymentResult</span><span class="o">.</span><span class="na">success</span><span class="o">(</span><span class="s">"paypal-"</span> <span class="o">+</span> <span class="n">order</span><span class="o">.</span><span class="na">id</span><span class="o">());</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BreweryCreditPaymentStrategy</span> <span class="kd">implements</span> <span class="nc">PaymentStrategy</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">BreweryCreditService</span> <span class="n">creditService</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">BreweryCreditPaymentStrategy</span><span class="o">(</span><span class="nc">BreweryCreditService</span> <span class="n">creditService</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">creditService</span> <span class="o">=</span> <span class="n">creditService</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">PaymentProvider</span> <span class="nf">provider</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="nc">PaymentProvider</span><span class="o">.</span><span class="na">BREWERY_CREDIT</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">PaymentResult</span> <span class="nf">pay</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kt">boolean</span> <span class="n">debited</span> <span class="o">=</span> <span class="n">creditService</span><span class="o">.</span><span class="na">debit</span><span class="o">(</span><span class="n">order</span><span class="o">.</span><span class="na">customerId</span><span class="o">(),</span> <span class="n">order</span><span class="o">.</span><span class="na">totalAmount</span><span class="o">());</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">debited</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="nc">PaymentResult</span><span class="o">.</span><span class="na">success</span><span class="o">(</span><span class="s">"credit-"</span> <span class="o">+</span> <span class="n">order</span><span class="o">.</span><span class="na">id</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="nc">PaymentResult</span><span class="o">.</span><span class="na">failed</span><span class="o">(</span><span class="s">"Insufficient brewery credits"</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> Now we need a component that resolves the right strategy based on the payment provider:</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Component</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">PaymentStrategyResolver</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">PaymentProvider</span><span class="o">,</span> <span class="nc">PaymentStrategy</span><span class="o">&gt;</span> <span class="n">strategies</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">PaymentStrategyResolver</span><span class="o">(</span><span class="nc">List</span><span class="o">&lt;</span><span class="nc">PaymentStrategy</span><span class="o">&gt;</span> <span class="n">strategyList</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">strategies</span> <span class="o">=</span> <span class="n">strategyList</span><span class="o">.</span><span class="na">stream</span><span class="o">()</span>
+            <span class="o">.</span><span class="na">collect</span><span class="o">(</span><span class="nc">Collectors</span><span class="o">.</span><span class="na">toMap</span><span class="o">(</span>
+                <span class="nl">PaymentStrategy:</span><span class="o">:</span><span class="n">provider</span><span class="o">,</span>
+                <span class="nc">Function</span><span class="o">.</span><span class="na">identity</span><span class="o">()</span>
+            <span class="o">));</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">PaymentStrategy</span> <span class="nf">resolve</span><span class="o">(</span><span class="nc">PaymentProvider</span> <span class="n">provider</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="nc">Optional</span><span class="o">.</span><span class="na">ofNullable</span><span class="o">(</span><span class="n">strategies</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">provider</span><span class="o">))</span>
+            <span class="o">.</span><span class="na">orElseThrow</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="k">new</span> <span class="nc">IllegalArgumentException</span><span class="o">(</span>
+                <span class="s">"Unsupported payment provider: "</span> <span class="o">+</span> <span class="n">provider</span>
+            <span class="o">));</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> The magic here is that Spring automatically injects all implementations of <code class="language-plaintext highlighter-rouge">PaymentStrategy</code> as a List. We then build a map from provider to strategy. In my opinion, this is extremely clean.</p> <p><span style="margin-left: 10px;"></span> Now the order service becomes much simpler:</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BeerOrderServiceAfterStrategy</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">PaymentStrategyResolver</span> <span class="n">paymentStrategyResolver</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">BeerOrderServiceAfterStrategy</span><span class="o">(</span><span class="nc">PaymentStrategyResolver</span> <span class="n">paymentStrategyResolver</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">paymentStrategyResolver</span> <span class="o">=</span> <span class="n">paymentStrategyResolver</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">placeOrder</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">PaymentStrategy</span> <span class="n">paymentStrategy</span> <span class="o">=</span> <span class="n">paymentStrategyResolver</span><span class="o">.</span><span class="na">resolve</span><span class="o">(</span><span class="n">order</span><span class="o">.</span><span class="na">paymentProvider</span><span class="o">());</span>
+        <span class="nc">PaymentResult</span> <span class="n">result</span> <span class="o">=</span> <span class="n">paymentStrategy</span><span class="o">.</span><span class="na">pay</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="nc">PaymentStatus</span><span class="o">.</span><span class="na">SUCCESS</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">result</span><span class="o">.</span><span class="na">status</span><span class="o">()))</span> <span class="o">{</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">order</span><span class="o">.</span><span class="na">withStatus</span><span class="o">(</span><span class="nc">BeerOrderStatus</span><span class="o">.</span><span class="na">PAID</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">order</span><span class="o">.</span><span class="na">withStatus</span><span class="o">(</span><span class="nc">BeerOrderStatus</span><span class="o">.</span><span class="na">PAYMENT_FAILED</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="n">saveOrder</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">saveOrder</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">//save order</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> The service no longer knows how Stripe works, how PayPal works, or how brewery credits work. It just asks for the right strategy and delegates. If we need to add a new payment provider like Apple Pay, we create a new strategy and register it with Spring. The order service does not change at all.</p> <p><span style="margin-left: 10px;"></span> The benefits are clear:</p> <ul> <li>Each strategy is isolated and testable in isolation.</li> <li>Adding a new payment provider does not require changing existing code.</li> <li>The order service is simpler and focused on business flow, not payment details.</li> <li>Strategies can depend on different services (like <code class="language-plaintext highlighter-rouge">BreweryCreditService</code>) without bloating the order service.</li> </ul> <h2 id="4-factory-pattern--creating-beer-notification-handlers">4. Factory Pattern — Creating Beer Notification Handlers</h2> <p><span style="margin-left: 10px;"></span> The Factory Pattern is about centralizing object creation or resolution. In the beer shop, after an order is placed, we need to notify the customer. But notifications can be sent through different channels: email, SMS or push notifications to the brewery team.</p> <p><span style="margin-left: 10px;"></span> Without a factory, notification creation logic might be scattered across the codebase:</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BeerOrderServiceBeforeFactory</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">placeOrder</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">//process order</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="nc">NotificationChannel</span><span class="o">.</span><span class="na">EMAIL</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">order</span><span class="o">.</span><span class="na">notificationChannel</span><span class="o">()))</span> <span class="o">{</span>
+            <span class="k">new</span> <span class="nf">EmailNotificationHandler</span><span class="o">().</span><span class="na">send</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="nc">NotificationChannel</span><span class="o">.</span><span class="na">SMS</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">order</span><span class="o">.</span><span class="na">notificationChannel</span><span class="o">()))</span> <span class="o">{</span>
+            <span class="k">new</span> <span class="nf">SmsNotificationHandler</span><span class="o">().</span><span class="na">send</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="nc">NotificationChannel</span><span class="o">.</span><span class="na">PUSH</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">order</span><span class="o">.</span><span class="na">notificationChannel</span><span class="o">()))</span> <span class="o">{</span>
+            <span class="k">new</span> <span class="nf">PushNotificationHandler</span><span class="o">().</span><span class="na">send</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> This is not ideal. Object creation is mixed with business logic. If we add a new notification channel in the refund service, payment service, and shipping service, we have to duplicate these checks everywhere.</p> <p><span style="margin-left: 10px;"></span> The Factory Pattern centralizes this. First, we define a common interface:</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">BeerNotificationHandler</span> <span class="o">{</span>
+    <span class="nc">NotificationChannel</span> <span class="nf">channel</span><span class="o">();</span>
+    <span class="kt">void</span> <span class="nf">send</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> Then we implement each notification channel:</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Component</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">EmailBeerNotificationHandler</span> <span class="kd">implements</span> <span class="nc">BeerNotificationHandler</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">EmailService</span> <span class="n">emailService</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">EmailBeerNotificationHandler</span><span class="o">(</span><span class="nc">EmailService</span> <span class="n">emailService</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">emailService</span> <span class="o">=</span> <span class="n">emailService</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">NotificationChannel</span> <span class="nf">channel</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="nc">NotificationChannel</span><span class="o">.</span><span class="na">EMAIL</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">send</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Sending order confirmation to "</span> <span class="o">+</span> <span class="n">order</span><span class="o">.</span><span class="na">customerId</span><span class="o">()</span> <span class="o">+</span> <span class="s">" via email"</span><span class="o">);</span>
+        <span class="n">emailService</span><span class="o">.</span><span class="na">send</span><span class="o">(</span><span class="n">order</span><span class="o">.</span><span class="na">customerId</span><span class="o">(),</span> <span class="s">"Your beer order is confirmed!"</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Component</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">SmsBeerNotificationHandler</span> <span class="kd">implements</span> <span class="nc">BeerNotificationHandler</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">SmsService</span> <span class="n">smsService</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">SmsBeerNotificationHandler</span><span class="o">(</span><span class="nc">SmsService</span> <span class="n">smsService</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">smsService</span> <span class="o">=</span> <span class="n">smsService</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">NotificationChannel</span> <span class="nf">channel</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="nc">NotificationChannel</span><span class="o">.</span><span class="na">SMS</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">send</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Sending SMS confirmation to "</span> <span class="o">+</span> <span class="n">order</span><span class="o">.</span><span class="na">customerId</span><span class="o">());</span>
+        <span class="n">smsService</span><span class="o">.</span><span class="na">send</span><span class="o">(</span><span class="n">order</span><span class="o">.</span><span class="na">customerId</span><span class="o">(),</span> <span class="s">"Beer order confirmed!"</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> Now the factory:</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Component</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BeerNotificationFactory</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">NotificationChannel</span><span class="o">,</span> <span class="nc">BeerNotificationHandler</span><span class="o">&gt;</span> <span class="n">handlers</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">BeerNotificationFactory</span><span class="o">(</span><span class="nc">List</span><span class="o">&lt;</span><span class="nc">BeerNotificationHandler</span><span class="o">&gt;</span> <span class="n">handlerList</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">handlers</span> <span class="o">=</span> <span class="n">handlerList</span><span class="o">.</span><span class="na">stream</span><span class="o">()</span>
+            <span class="o">.</span><span class="na">collect</span><span class="o">(</span><span class="nc">Collectors</span><span class="o">.</span><span class="na">toMap</span><span class="o">(</span>
+                <span class="nl">BeerNotificationHandler:</span><span class="o">:</span><span class="n">channel</span><span class="o">,</span>
+                <span class="nc">Function</span><span class="o">.</span><span class="na">identity</span><span class="o">()</span>
+            <span class="o">));</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">BeerNotificationHandler</span> <span class="nf">getHandler</span><span class="o">(</span><span class="nc">NotificationChannel</span> <span class="n">channel</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="nc">Optional</span><span class="o">.</span><span class="na">ofNullable</span><span class="o">(</span><span class="n">handlers</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">channel</span><span class="o">))</span>
+            <span class="o">.</span><span class="na">orElseThrow</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="k">new</span> <span class="nc">IllegalArgumentException</span><span class="o">(</span>
+                <span class="s">"Unsupported notification channel: "</span> <span class="o">+</span> <span class="n">channel</span>
+            <span class="o">));</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> And now any service can use it:</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="nd">@RequiredArgsConstructor</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BeerOrderServiceWithFactory</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">BeerNotificationFactory</span> <span class="n">notificationFactory</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">placeOrder</span><span class="o">(</span><span class="nc">BeerOrder</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">BeerNotificationHandler</span> <span class="n">handler</span> <span class="o">=</span> <span class="n">notificationFactory</span><span class="o">.</span><span class="na">getHandler</span><span class="o">(</span><span class="n">order</span><span class="o">.</span><span class="na">notificationChannel</span><span class="o">());</span>
+        <span class="n">handler</span><span class="o">.</span><span class="na">send</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> This is much cleaner! The service does not know how to create or construct handlers. It just asks the factory for the right one. The factory handles all the complexity like dependency injection, configuration, and error handling.</p> <h3 id="factory-vs-strategy">Factory vs Strategy</h3> <p><span style="margin-left: 10px;"></span> Factory and Strategy patterns may look similar. They both have an interface with multiple implementations, and they both use a resolver or factory to pick the right one. But they solve different problems:</p> <p><span style="margin-left: 10px;"></span></p> <ul> <li> <strong>Strategy</strong> is about choosing behavior. It answers the question: “How should I do this?” Multiple strategies represent different ways to accomplish the same goal. A payment strategy is still about paying, just using different methods.</li> <li> <strong>Factory</strong> is about creating or resolving objects. It answers the question: “Which object should I use?” The factory handles the construction, configuration, and lifecycle of objects.</li> </ul> <p><span style="margin-left: 10px;"></span> In our example, the payment strategies all implement the same pay behavior but in different ways. The notification factory creates different handler objects, each designed to work with a different channel. The strategy is about the algorithm. The factory is about object creation.</p> <h2 id="5-repository-pattern">5. Repository Pattern</h2> <p><span style="margin-left: 10px;"></span> The Repository Pattern is about creating a boundary between business logic and persistence logic. In the backend, we need to query beers, find customers, retrieve orders, and manage stock. Without the Repository Pattern, business services often mix this database access with business decisions.</p> <p><span style="margin-left: 10px;"></span> The Repository Pattern says to create an interface that represents the data access layer. The service depends on this interface, not on the database directly.</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">BeerRepository</span> <span class="kd">extends</span> <span class="nc">JpaRepository</span><span class="o">&lt;</span><span class="nc">BeerEntity</span><span class="o">,</span> <span class="nc">Long</span><span class="o">&gt;</span> <span class="o">{</span>
+
+    <span class="nc">List</span><span class="o">&lt;</span><span class="nc">BeerEntity</span><span class="o">&gt;</span> <span class="nf">findByType</span><span class="o">(</span><span class="nc">BeerType</span> <span class="n">type</span><span class="o">);</span>
+
+    <span class="nc">Optional</span><span class="o">&lt;</span><span class="nc">BeerEntity</span><span class="o">&gt;</span> <span class="nf">findByNameAndBrewery</span><span class="o">(</span><span class="nc">String</span> <span class="n">name</span><span class="o">,</span> <span class="nc">String</span> <span class="n">brewery</span><span class="o">);</span>
+
+    <span class="nc">List</span><span class="o">&lt;</span><span class="nc">BeerEntity</span><span class="o">&gt;</span> <span class="nf">findAvailableBeers</span><span class="o">();</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> The interface is clean and focused on what data we need. The service does not need to know about SQL, JPA, or database schemas. It just calls repository methods.</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BeerCatalogService</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">BeerRepository</span> <span class="n">beerRepository</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">BeerCatalogService</span><span class="o">(</span><span class="nc">BeerRepository</span> <span class="n">beerRepository</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">beerRepository</span> <span class="o">=</span> <span class="n">beerRepository</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">Beer</span><span class="o">&gt;</span> <span class="nf">findAvailableIpas</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">beerRepository</span><span class="o">.</span><span class="na">findByType</span><span class="o">(</span><span class="nc">BeerType</span><span class="o">.</span><span class="na">IPA</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">stream</span><span class="o">()</span>
+            <span class="o">.</span><span class="na">filter</span><span class="o">(</span><span class="nl">BeerEntity:</span><span class="o">:</span><span class="n">isAvailable</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="nl">BeerMapper:</span><span class="o">:</span><span class="n">toDomain</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">toList</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">Optional</span><span class="o">&lt;</span><span class="nc">Beer</span><span class="o">&gt;</span> <span class="nf">findBeerByNameAndBrewery</span><span class="o">(</span><span class="nc">String</span> <span class="n">name</span><span class="o">,</span> <span class="nc">String</span> <span class="n">brewery</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">beerRepository</span><span class="o">.</span><span class="na">findByNameAndBrewery</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="n">brewery</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="nl">BeerMapper:</span><span class="o">:</span><span class="n">toDomain</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> Similarly for orders:</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">BeerOrderRepository</span> <span class="kd">extends</span> <span class="nc">JpaRepository</span><span class="o">&lt;</span><span class="nc">BeerOrderEntity</span><span class="o">,</span> <span class="nc">Long</span><span class="o">&gt;</span> <span class="o">{</span>
+
+    <span class="nc">List</span><span class="o">&lt;</span><span class="nc">BeerOrderEntity</span><span class="o">&gt;</span> <span class="nf">findByCustomerIdAndStatus</span><span class="o">(</span><span class="nc">Long</span> <span class="n">customerId</span><span class="o">,</span> <span class="nc">BeerOrderStatus</span> <span class="n">status</span><span class="o">);</span>
+
+    <span class="nc">Optional</span><span class="o">&lt;</span><span class="nc">BeerOrderEntity</span><span class="o">&gt;</span> <span class="nf">findByIdAndCustomerId</span><span class="o">(</span><span class="nc">Long</span> <span class="n">orderId</span><span class="o">,</span> <span class="nc">Long</span> <span class="n">customerId</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BeerOrderQueryService</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">BeerOrderRepository</span> <span class="n">orderRepository</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">BeerOrderQueryService</span><span class="o">(</span><span class="nc">BeerOrderRepository</span> <span class="n">orderRepository</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">orderRepository</span> <span class="o">=</span> <span class="n">orderRepository</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">BeerOrder</span><span class="o">&gt;</span> <span class="nf">getCustomerOrders</span><span class="o">(</span><span class="nc">Long</span> <span class="n">customerId</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">orderRepository</span><span class="o">.</span><span class="na">findByCustomerIdAndStatus</span><span class="o">(</span><span class="n">customerId</span><span class="o">,</span> <span class="nc">BeerOrderStatus</span><span class="o">.</span><span class="na">PAID</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">stream</span><span class="o">()</span>
+            <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="nl">BeerOrderMapper:</span><span class="o">:</span><span class="n">toDomain</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">toList</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">BeerOrder</span> <span class="nf">getOrder</span><span class="o">(</span><span class="nc">Long</span> <span class="n">orderId</span><span class="o">,</span> <span class="nc">Long</span> <span class="n">customerId</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">orderRepository</span><span class="o">.</span><span class="na">findByIdAndCustomerId</span><span class="o">(</span><span class="n">orderId</span><span class="o">,</span> <span class="n">customerId</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="nl">BeerOrderMapper:</span><span class="o">:</span><span class="n">toDomain</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">orElseThrow</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="k">new</span> <span class="nc">OrderNotFoundException</span><span class="o">(</span><span class="n">orderId</span><span class="o">));</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> The key benefit is testing. We can mock the repository:</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Test</span>
+<span class="kt">void</span> <span class="nf">testFindAvailableIpas</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nc">BeerRepository</span> <span class="n">mockRepository</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="nc">BeerRepository</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+    <span class="nc">BeerEntity</span> <span class="n">ipaEntity</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">BeerEntity</span><span class="o">(</span><span class="mi">1L</span><span class="o">,</span> <span class="s">"IPA Beer"</span><span class="o">,</span> <span class="s">"Brewery"</span><span class="o">,</span> <span class="nc">BeerType</span><span class="o">.</span><span class="na">IPA</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+    <span class="n">when</span><span class="o">(</span><span class="n">mockRepository</span><span class="o">.</span><span class="na">findByType</span><span class="o">(</span><span class="nc">BeerType</span><span class="o">.</span><span class="na">IPA</span><span class="o">)).</span><span class="na">thenReturn</span><span class="o">(</span><span class="nc">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="n">ipaEntity</span><span class="o">));</span>
+
+    <span class="nc">BeerCatalogService</span> <span class="n">service</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">BeerCatalogService</span><span class="o">(</span><span class="n">mockRepository</span><span class="o">);</span>
+    <span class="nc">List</span><span class="o">&lt;</span><span class="nc">Beer</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">service</span><span class="o">.</span><span class="na">findAvailableIpas</span><span class="o">();</span>
+
+    <span class="n">assertEquals</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="n">result</span><span class="o">.</span><span class="na">size</span><span class="o">());</span>
+    <span class="n">verify</span><span class="o">(</span><span class="n">mockRepository</span><span class="o">).</span><span class="na">findByType</span><span class="o">(</span><span class="nc">BeerType</span><span class="o">.</span><span class="na">IPA</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> The service is tested without touching a database. That is powerful.</p> <h3 id="what-should-not-go-into-a-repository">What Should Not Go Into a Repository</h3> <p><span style="margin-left: 10px;"></span> The Repository Pattern has a clear scope. It should only handle data access. It should not include:</p> <p><span style="margin-left: 10px;"></span></p> <ul> <li>Payment logic: A repository should not process payments or call payment gateways. That belongs in a service or strategy.</li> <li>Notification logic: A repository should not send emails or SMS.</li> <li>Business decision rules: A repository should not decide if a discount applies or if an order is valid. That is business logic, not data access.</li> <li>API formatting: A repository should not transform data into JSON or API responses. That is the controller’s job.</li> </ul> <p><span style="margin-left: 10px;"></span> A repository is focused: it queries, saves, and updates data. Period. If you find yourself thinking “but I could also validate here” or “I could also call an external service here”, stop. That belongs elsewhere.</p> <h2 id="6-combining-the-patterns-in-one-backend-flow">6. Combining the Patterns in One Backend Flow</h2> <p><span style="margin-left: 10px;"></span> Now let’s see how these patterns work together in a real backend scenario. A customer places an order for a pack of beers. The backend needs to:</p> <ol> <li>Load beer data from the repository</li> <li>Validate stock availability</li> <li>Process payment using the right strategy</li> <li>Send a notification using the right handler</li> <li>Save the order and return a result</li> </ol> <p><span style="margin-left: 10px;"></span> Here is the service that orchestrates this flow:</p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BeerOrderService</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">BeerRepository</span> <span class="n">beerRepository</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">BeerOrderRepository</span> <span class="n">orderRepository</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">PaymentStrategyResolver</span> <span class="n">paymentStrategyResolver</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">BeerNotificationFactory</span> <span class="n">notificationFactory</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">BeerOrderService</span><span class="o">(</span>
+        <span class="nc">BeerRepository</span> <span class="n">beerRepository</span><span class="o">,</span>
+        <span class="nc">BeerOrderRepository</span> <span class="n">orderRepository</span><span class="o">,</span>
+        <span class="nc">PaymentStrategyResolver</span> <span class="n">paymentStrategyResolver</span><span class="o">,</span>
+        <span class="nc">BeerNotificationFactory</span> <span class="n">notificationFactory</span>
+    <span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">beerRepository</span> <span class="o">=</span> <span class="n">beerRepository</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">orderRepository</span> <span class="o">=</span> <span class="n">orderRepository</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">paymentStrategyResolver</span> <span class="o">=</span> <span class="n">paymentStrategyResolver</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">notificationFactory</span> <span class="o">=</span> <span class="n">notificationFactory</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">BeerOrderResult</span> <span class="nf">placeOrder</span><span class="o">(</span><span class="nc">BeerOrderRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">//step 1 - load beers from repository and validate stock</span>
+        <span class="nc">List</span><span class="o">&lt;</span><span class="nc">BeerEntity</span><span class="o">&gt;</span> <span class="n">beers</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ArrayList</span><span class="o">&lt;&gt;();</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">BeerOrderItemRequest</span> <span class="n">item</span> <span class="o">:</span> <span class="n">request</span><span class="o">.</span><span class="na">items</span><span class="o">())</span> <span class="o">{</span>
+            <span class="nc">BeerEntity</span> <span class="n">beer</span> <span class="o">=</span> <span class="n">beerRepository</span><span class="o">.</span><span class="na">findById</span><span class="o">(</span><span class="n">item</span><span class="o">.</span><span class="na">beerId</span><span class="o">())</span>
+                <span class="o">.</span><span class="na">orElseThrow</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="k">new</span> <span class="nc">BeerNotFoundException</span><span class="o">(</span><span class="n">item</span><span class="o">.</span><span class="na">beerId</span><span class="o">()));</span>
+
+            <span class="k">if</span> <span class="o">(</span><span class="n">beer</span><span class="o">.</span><span class="na">stock</span><span class="o">()</span> <span class="o">&lt;</span> <span class="n">item</span><span class="o">.</span><span class="na">quantity</span><span class="o">())</span> <span class="o">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">InsufficientStockException</span><span class="o">(</span><span class="n">item</span><span class="o">.</span><span class="na">beerId</span><span class="o">());</span>
+            <span class="o">}</span>
+
+            <span class="n">beers</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">beer</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="c1">//step 2 - reate order entity</span>
+        <span class="nc">BeerOrderEntity</span> <span class="n">order</span> <span class="o">=</span> <span class="n">createOrderEntity</span><span class="o">(</span><span class="n">request</span><span class="o">,</span> <span class="n">beers</span><span class="o">);</span>
+
+        <span class="c1">//step 3 - process payment using strategy</span>
+        <span class="nc">PaymentStrategy</span> <span class="n">paymentStrategy</span> <span class="o">=</span> <span class="n">paymentStrategyResolver</span><span class="o">.</span><span class="na">resolve</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">paymentProvider</span><span class="o">());</span>
+        <span class="nc">PaymentResult</span> <span class="n">paymentResult</span> <span class="o">=</span> <span class="n">paymentStrategy</span><span class="o">.</span><span class="na">pay</span><span class="o">(</span><span class="nc">BeerOrderMapper</span><span class="o">.</span><span class="na">toOrder</span><span class="o">(</span><span class="n">order</span><span class="o">));</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="nc">PaymentStatus</span><span class="o">.</span><span class="na">FAILED</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">paymentResult</span><span class="o">.</span><span class="na">status</span><span class="o">()))</span> <span class="o">{</span>
+            <span class="n">order</span><span class="o">.</span><span class="na">setStatus</span><span class="o">(</span><span class="nc">BeerOrderStatus</span><span class="o">.</span><span class="na">PAYMENT_FAILED</span><span class="o">);</span>
+            <span class="n">orderRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">PaymentFailedException</span><span class="o">(</span><span class="n">paymentResult</span><span class="o">.</span><span class="na">message</span><span class="o">());</span>
+        <span class="o">}</span>
+
+        <span class="c1">//step 4 - update order status and save</span>
+        <span class="n">order</span><span class="o">.</span><span class="na">setStatus</span><span class="o">(</span><span class="nc">BeerOrderStatus</span><span class="o">.</span><span class="na">PAID</span><span class="o">);</span>
+        <span class="n">order</span><span class="o">.</span><span class="na">setTransactionId</span><span class="o">(</span><span class="n">paymentResult</span><span class="o">.</span><span class="na">transactionId</span><span class="o">());</span>
+        <span class="nc">BeerOrderEntity</span> <span class="n">savedOrder</span> <span class="o">=</span> <span class="n">orderRepository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+
+        <span class="c1">//step 5 - send notification using factory</span>
+        <span class="nc">BeerNotificationHandler</span> <span class="n">handler</span> <span class="o">=</span> <span class="n">notificationFactory</span><span class="o">.</span><span class="na">getHandler</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">notificationChannel</span><span class="o">());</span>
+        <span class="n">handler</span><span class="o">.</span><span class="na">send</span><span class="o">(</span><span class="nc">BeerOrderMapper</span><span class="o">.</span><span class="na">toOrder</span><span class="o">(</span><span class="n">savedOrder</span><span class="o">));</span>
+
+        <span class="k">return</span> <span class="nc">BeerOrderResult</span><span class="o">.</span><span class="na">success</span><span class="o">(</span><span class="n">paymentResult</span><span class="o">.</span><span class="na">transactionId</span><span class="o">(),</span> <span class="n">savedOrder</span><span class="o">.</span><span class="na">getId</span><span class="o">());</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="nc">BeerOrderEntity</span> <span class="nf">createOrderEntity</span><span class="o">(</span><span class="nc">BeerOrderRequest</span> <span class="n">request</span><span class="o">,</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">BeerEntity</span><span class="o">&gt;</span> <span class="n">beers</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">BigDecimal</span> <span class="n">total</span> <span class="o">=</span> <span class="n">beers</span><span class="o">.</span><span class="na">stream</span><span class="o">()</span>
+            <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="nl">BeerEntity:</span><span class="o">:</span><span class="n">getPrice</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">reduce</span><span class="o">(</span><span class="nc">BigDecimal</span><span class="o">.</span><span class="na">ZERO</span><span class="o">,</span> <span class="nl">BigDecimal:</span><span class="o">:</span><span class="n">add</span><span class="o">);</span>
+
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">BeerOrderEntity</span><span class="o">(</span>
+            <span class="n">request</span><span class="o">.</span><span class="na">customerId</span><span class="o">(),</span>
+            <span class="n">beers</span><span class="o">,</span>
+            <span class="n">total</span><span class="o">,</span>
+            <span class="nc">BeerOrderStatus</span><span class="o">.</span><span class="na">CREATED</span><span class="o">,</span>
+            <span class="n">request</span><span class="o">.</span><span class="na">paymentProvider</span><span class="o">(),</span>
+            <span class="n">request</span><span class="o">.</span><span class="na">notificationChannel</span><span class="o">()</span>
+        <span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">record</span> <span class="nf">BeerOrderResult</span><span class="o">(</span>
+    <span class="nc">String</span> <span class="n">transactionId</span><span class="o">,</span>
+    <span class="nc">Long</span> <span class="n">orderId</span><span class="o">,</span>
+    <span class="nc">String</span> <span class="n">message</span>
+<span class="o">)</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="nc">BeerOrderResult</span> <span class="nf">success</span><span class="o">(</span><span class="nc">String</span> <span class="n">transactionId</span><span class="o">,</span> <span class="nc">Long</span> <span class="n">orderId</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">BeerOrderResult</span><span class="o">(</span><span class="n">transactionId</span><span class="o">,</span> <span class="n">orderId</span><span class="o">,</span> <span class="s">"Order placed successfully"</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> Notice how clean this is. The service:</p> <ul> <li>Uses repositories to fetch data without knowing about SQL.</li> <li>Uses the payment strategy resolver to pick the right payment method without knowing how they work.</li> <li>Uses the notification factory to pick the right handler without knowing how to construct it.</li> <li>Focuses purely on business flow: validate, pay, notify, save.</li> </ul> <p><span style="margin-left: 10px;"></span> Each pattern handles its concern. The repository handles data access. The strategy handles payment behavior. The factory handles notification resolution. The service orchestrates them. This is maintainable, testable, and easy to extend.</p> <p><span style="margin-left: 10px;"></span> If we need to add Apple Pay, we create a new strategy and register it. The order service does not change. If we need to add a new notification channel, we add a handler. The order service does not change. If we need a new query on beers, we add a repository method. The service calls it without caring about the SQL.</p> <h2 id="7-reusable-shared-libraries-and-components">7. Reusable Shared Libraries and Components</h2> <p><span style="margin-left: 10px;"></span> So far, we have talked about patterns within a single service, but we often have multiple services. A beer platform might have:</p> <ul> <li>A catalog service</li> <li>An order service</li> <li>A payment service</li> <li>A notification service</li> <li>A reporting service</li> </ul> <p><span style="margin-left: 10px;"></span> As these services grow, you start noticing repeated code:</p> <ul> <li>Beer validation (checking alcohol content, price, availability)</li> <li>Brewery formatting (normalizing brewery names)</li> <li>Money calculations (tax, discounts, totals)</li> <li>Order error handling (specific exceptions for order failures)</li> <li>Notification abstractions (sending to different channels)</li> </ul> <p><span style="margin-left: 10px;"></span> When you see this repetition across multiple services, that is when you extract shared components. In a multi-module Maven or Gradle project, you might structure it like this:</p> <p><span style="margin-left: 10px;"></span></p> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>beer-platform/
+├── beer-catalog-service/
+│   ├── src/main/java/com/beer/catalog/
+│   └── pom.xml
+├── beer-order-service/
+│   ├── src/main/java/com/beer/order/
+│   └── pom.xml
+├── beer-payment-service/
+│   ├── src/main/java/com/beer/payment/
+│   └── pom.xml
+├── beer-notification-service/
+│   ├── src/main/java/com/beer/notification/
+│   └── pom.xml
+└── beer-common/
+    ├── src/main/java/com/beer/common/
+    │   ├── validation/
+    │   ├── exceptions/
+    │   ├── money/
+    │   ├── mappers/
+    │   └── events/
+    └── pom.xml
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> The <code class="language-plaintext highlighter-rouge">beer-common</code> module contains shared code that all services depend on. For example:</p> <p><span style="margin-left: 10px;"></span></p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">BeerValidator</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="nf">BeerValidator</span><span class="o">()</span> <span class="o">{</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">validateBeerPrice</span><span class="o">(</span><span class="nc">BigDecimal</span> <span class="n">price</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">price</span><span class="o">.</span><span class="na">compareTo</span><span class="o">(</span><span class="nc">BigDecimal</span><span class="o">.</span><span class="na">ZERO</span><span class="o">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">InvalidBeerException</span><span class="o">(</span><span class="s">"Beer price must be greater than zero"</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">validateAlcoholContent</span><span class="o">(</span><span class="nc">BigDecimal</span> <span class="n">alcoholPercentage</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">alcoholPercentage</span><span class="o">.</span><span class="na">compareTo</span><span class="o">(</span><span class="nc">BigDecimal</span><span class="o">.</span><span class="na">ZERO</span><span class="o">)</span> <span class="o">&lt;</span> <span class="mi">0</span> 
+            <span class="o">||</span> <span class="n">alcoholPercentage</span><span class="o">.</span><span class="na">compareTo</span><span class="o">(</span><span class="k">new</span> <span class="nc">BigDecimal</span><span class="o">(</span><span class="s">"100"</span><span class="o">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">InvalidBeerException</span><span class="o">(</span><span class="s">"Alcohol percentage must be between 0 and 100"</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span></p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">BeerPriceCalculator</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="nf">BeerPriceCalculator</span><span class="o">()</span> <span class="o">{</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="nc">BigDecimal</span> <span class="nf">calculateTotal</span><span class="o">(</span>
+        <span class="nc">BigDecimal</span> <span class="n">unitPrice</span><span class="o">,</span>
+        <span class="kt">int</span> <span class="n">quantity</span><span class="o">,</span>
+        <span class="nc">BigDecimal</span> <span class="n">taxRate</span>
+    <span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">unitPrice</span>
+            <span class="o">.</span><span class="na">multiply</span><span class="o">(</span><span class="nc">BigDecimal</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">quantity</span><span class="o">))</span>
+            <span class="o">.</span><span class="na">multiply</span><span class="o">(</span><span class="nc">BigDecimal</span><span class="o">.</span><span class="na">ONE</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">taxRate</span><span class="o">));</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="nc">BigDecimal</span> <span class="nf">applyDiscount</span><span class="o">(</span><span class="nc">BigDecimal</span> <span class="n">total</span><span class="o">,</span> <span class="nc">BigDecimal</span> <span class="n">discountRate</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">total</span><span class="o">.</span><span class="na">multiply</span><span class="o">(</span><span class="nc">BigDecimal</span><span class="o">.</span><span class="na">ONE</span><span class="o">.</span><span class="na">subtract</span><span class="o">(</span><span class="n">discountRate</span><span class="o">));</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span></p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">BeerNotFoundException</span> <span class="kd">extends</span> <span class="nc">RuntimeException</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="nf">BeerNotFoundException</span><span class="o">(</span><span class="nc">Long</span> <span class="n">beerId</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">(</span><span class="s">"Beer with ID "</span> <span class="o">+</span> <span class="n">beerId</span> <span class="o">+</span> <span class="s">" not found"</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">InsufficientStockException</span> <span class="kd">extends</span> <span class="nc">RuntimeException</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="nf">InsufficientStockException</span><span class="o">(</span><span class="nc">Long</span> <span class="n">beerId</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">(</span><span class="s">"Insufficient stock for beer ID "</span> <span class="o">+</span> <span class="n">beerId</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span></p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">BeerOrderMapper</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="nf">BeerOrderMapper</span><span class="o">()</span> <span class="o">{</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="nc">BeerOrderRequest</span> <span class="nf">fromJson</span><span class="o">(</span><span class="nc">String</span> <span class="n">json</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// Parse JSON to BeerOrderRequest</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span> <span class="c1">// Simplified for this example</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="nc">BeerOrder</span> <span class="nf">toDomain</span><span class="o">(</span><span class="nc">BeerOrderEntity</span> <span class="n">entity</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// Map entity to domain</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span> <span class="c1">// Simplified for this example</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> Now all services can depend on <code class="language-plaintext highlighter-rouge">beer-common</code> and use these shared utilities:</p> <p><span style="margin-left: 10px;"></span></p> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BeerOrderValidationService</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">validateOrderRequest</span><span class="o">(</span><span class="nc">BeerOrderRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">BeerOrderItemRequest</span> <span class="n">item</span> <span class="o">:</span> <span class="n">request</span><span class="o">.</span><span class="na">items</span><span class="o">())</span> <span class="o">{</span>
+            <span class="nc">BeerValidator</span><span class="o">.</span><span class="na">validateBeerPrice</span><span class="o">(</span><span class="n">item</span><span class="o">.</span><span class="na">getPrice</span><span class="o">());</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BeerCatalogService</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="nc">BigDecimal</span> <span class="nf">calculateOrderTotal</span><span class="o">(</span><span class="nc">List</span><span class="o">&lt;</span><span class="nc">Beer</span><span class="o">&gt;</span> <span class="n">beers</span><span class="o">,</span> <span class="nc">BigDecimal</span> <span class="n">taxRate</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">beers</span><span class="o">.</span><span class="na">stream</span><span class="o">()</span>
+            <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">beer</span> <span class="o">-&gt;</span> <span class="nc">BeerPriceCalculator</span><span class="o">.</span><span class="na">calculateTotal</span><span class="o">(</span>
+                <span class="n">beer</span><span class="o">.</span><span class="na">price</span><span class="o">(),</span>
+                <span class="mi">1</span><span class="o">,</span>
+                <span class="n">taxRate</span>
+            <span class="o">))</span>
+            <span class="o">.</span><span class="na">reduce</span><span class="o">(</span><span class="nc">BigDecimal</span><span class="o">.</span><span class="na">ZERO</span><span class="o">,</span> <span class="nl">BigDecimal:</span><span class="o">:</span><span class="n">add</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div> <p><span style="margin-left: 10px;"></span> The key insight is that these shared components should be:</p> <ul> <li>Small and focused: Each component solves one problem.</li> <li>Stable: They should not change often. Once beer validation is settled, it should stay that way.</li> <li>Reused multiple times: If a component is used in only one service, it probably should not be shared yet.</li> </ul> <h3 id="reusable-does-not-mean-generic-too-early">Reusable Does Not Mean Generic Too Early</h3> <p><span style="margin-left: 10px;"></span> A common mistake is creating “reusable” components before they are actually needed. For example, do not create a generic “BeerCalculator” that handles everything related to beers and might be used “someday”.</p> <p><span style="margin-left: 10px;"></span> Instead, extract components when you see real duplication. If the beer price calculation appears in the order service, the invoice service, and the refund service, then extract <code class="language-plaintext highlighter-rouge">BeerPriceCalculator</code>. But if it only appears in the order service, leave it there for now. You are not saving time by extracting something that is not repeated yet.</p> <p><span style="margin-left: 10px;"></span> The same applies to exceptions. Do not create a huge exception hierarchy “just in case”. Create exceptions when you need them. <code class="language-plaintext highlighter-rouge">BeerNotFoundException</code> exists because multiple services need to handle the case when a beer is not found. <code class="language-plaintext highlighter-rouge">InsufficientStockException</code> exists because the order service needs to tell the customer why an order failed. These exceptions are useful abstractions because they are reused.</p> <p><span style="margin-left: 10px;"></span> Shared components should emerge from real problems, not from theoretical planning.</p> <h2 id="conclusion">Conclusion</h2> <p><span style="margin-left: 10px;"></span> Design patterns in backend Java are not about following rules or making code look advanced. They are about managing complexity as the system grows.</p> <p><span style="margin-left: 10px;"></span></p> <ul> <li>Use the Strategy Pattern when you have multiple ways to do something (payment providers, notification channels). It lets you add new behaviors without modifying existing code.</li> <li>Use the Factory Pattern when object creation becomes scattered. It centralizes construction and dependency injection.</li> <li>Use the Repository Pattern to keep database access out of business logic. It makes services easier to test and data access easier to change.</li> <li>Extract reusable components when you see the same code repeated across multiple services. But only extract when duplication is real, not theoretical.</li> </ul> <p><span style="margin-left: 10px;"></span> The goal is always the same, make the code easier to understand, easier to change, and easier to test. If a pattern does not achieve that, skip it. Patterns are tools, not laws!</p> </div> </article> </div> </div> <footer class="fixed-bottom"> <div class="container mt-0"> © Copyright 2026 Paulo Almeida. Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. Hosted by <a href="https://pages.github.com/" target="_blank" rel="external nofollow noopener">GitHub Pages</a>. Photos from <a href="https://unsplash.com" target="_blank" rel="external nofollow noopener">Unsplash</a>. </div> </footer> <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script> <script src="/assets/js/bootstrap.bundle.min.js"></script> <script src="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/js/mdb.min.js" integrity="sha256-NdbiivsvWt7VYCt6hYNT3h/th9vSTL4EDWeGs5SN3DA=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@4/imagesloaded.pkgd.min.js"></script> <script defer src="/assets/js/masonry.js" type="text/javascript"></script> <script defer src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.8/dist/medium-zoom.min.js" integrity="sha256-7PhEpEWEW0XXQ0k6kQrPKwuoIomz8R8IYyuU1Qew4P8=" crossorigin="anonymous"></script> <script defer src="/assets/js/zoom.js?7b30caa5023af4af8408a472dc4e1ebb"></script> <script defer src="https://unpkg.com/bootstrap-table@1.22.1/dist/bootstrap-table.min.js"></script> <script src="/assets/js/no_defer.js?d633890033921b33e0ceb13d22340a9c"></script> <script defer src="/assets/js/common.js?acdb9690d7641b2f8d40529018c71a01"></script> <script defer src="/assets/js/copy_code.js?c9d9dd48933de3831b3ee5ec9c209cac" type="text/javascript"></script> <script async src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script> <script async src="https://badge.dimensions.ai/badge.js"></script> <script type="text/javascript">window.MathJax={tex:{tags:"ams"}};</script> <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js"></script> <script defer src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script> <script type="text/javascript">function progressBarSetup(){"max"in document.createElement("progress")?(initializeProgressElement(),$(document).on("scroll",function(){progressBar.attr({value:getCurrentScrollPosition()})}),$(window).on("resize",initializeProgressElement)):(resizeProgressBar(),$(document).on("scroll",resizeProgressBar),$(window).on("resize",resizeProgressBar))}function getCurrentScrollPosition(){return $(window).scrollTop()}function initializeProgressElement(){let e=$("#navbar").outerHeight(!0);$("body").css({"padding-top":e}),$("progress-container").css({"padding-top":e}),progressBar.css({top:e}),progressBar.attr({max:getDistanceToScroll(),value:getCurrentScrollPosition()})}function getDistanceToScroll(){return $(document).height()-$(window).height()}function resizeProgressBar(){progressBar.css({width:getWidthPercentage()+"%"})}function getWidthPercentage(){return getCurrentScrollPosition()/getDistanceToScroll()*100}const progressBar=$("#progress");window.onload=function(){setTimeout(progressBarSetup,50)};</script> </body> </html>
