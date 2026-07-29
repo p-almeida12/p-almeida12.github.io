@@ -1,8 +1,8 @@
 ---
 layout: post
 title: Design Patterns I Use in Backend Java
-date: 2026-02-25 10:59:00-0400
-description: Practical backend Java patterns focused on reusability and maintainability.
+date: 2026-04-30 10:59:00-0400
+description: A practical overview of core design patterns in backend Java with simple examples.
 tags:
 categories:
 giscus_comments: false
@@ -10,1170 +10,524 @@ related_posts: false
 toc:
   beginning: true
 ---
-<span style="margin-left: 10px;"></span>
 
 ## Introduction
 
-<span style="margin-left: 10px;"></span>
-For me, design patterns in backend Java are not about making the code look “advanced”. They are about solving 
-practical problems that appear over and over again in real backend systems:
-- How do I avoid repeating the same conditional logic everywhere?
-- How do I add new behavior without rewriting existing code?
-- How do I keep business logic away from persistence details?
-- How do I make code easier to test?
-- How do I extract reusable components without creating a generic mess?
+Design patterns are reusable solutions to common software design problems. They are not rules, and they are not a shortcut to writing "better" code by default. Their value is more practical than that: they give you a way to express collaboration, object creation, and communication clearly.
 
-<span style="margin-left: 10px;"></span>
-That is where design patterns are still useful. Not as theory or as decoration, but as tools I can actually use.
+The best patterns usually solve one of these problems:
 
-<span style="margin-left: 10px;"></span>
-In backend Java, especially in applications built with Spring Boot, patterns like Strategy, Factory, and 
-Repository appear naturally. You notice that the code is becoming harder to change, and then you introduce 
-a structure that makes the next change easier. That is the practical value of design patterns.
+- One class should exist only once.
+- Object creation should be centralized.
+- Many objects need to react to one event.
+- Behavior should be added without changing the base class.
+- Communication between objects is becoming tangled.
+- A complex subsystem needs one simple entry point.
 
-<span style="margin-left: 10px;"></span>
-Imagine we are building a backend system for an online beer shop.
-Customers can browse beers, place orders, pay using different providers, and receive notifications when 
-their order is confirmed. Something like this:
-- Customers browse beers
-- Customers place beer orders
-- Payments can be made through different providers
-- Notifications can be sent through different channels
-- Beer data is stored in a database
-- Shared logic is reused across services
+In this article, I will use very simple examples:
 
-<span style="margin-left: 10px;"></span>
-At the beginning, the system might look simple. Maybe we only support one payment provider.
+- A logger for Singleton
+- Email and SMS notifications for Factory Method
+- News subscribers for Observer
+- Coffee with milk for Decorator
+- A chat room for Mediator
+- A home cinema for Facade
 
-```java
-public class BeerOrderService {
+I am intentionally keeping the examples small. That makes the pattern easier to understand and easier to apply correctly in real code.
 
-    public void placeOrder(BeerOrder order) {
-        chargeWithStripe(order);
-        sendEmailConfirmation(order);
-        saveOrder(order);
-    }
+## What To Look For Before Using A Pattern
 
-    private void chargeWithStripe(BeerOrder order) {
-        System.out.println("Charging beer order with Stripe");
-    }
+Before adding a design pattern, I ask a few questions:
 
-    private void sendEmailConfirmation(BeerOrder order) {
-        System.out.println("Sending beer order confirmation email");
-    }
+- Is the problem real, or am I designing for a future that may never come?
+- Will this make the code easier to read and test?
+- Does the pattern have a single clear responsibility?
+- Will the abstraction still feel natural if the system grows?
 
-    private void saveOrder(BeerOrder order) {
-        System.out.println("Saving beer order");
-    }
-}
-```
+If the answer is no, I usually keep the code simpler.
 
-<span style="margin-left: 10px;"></span>
-This is not necessarily bad code, for a small application, it might be the perfect solution. The problem 
-starts when the requirements change (oh and they do!). A few weeks later, the business wants to support PayPal
-or credits. Then email notifications are not enough, so we add SMS. Then different beer types need different 
-validation rules, for example for alcohol content. Suddenly, the original service starts growing and we find
-ourselves with the great wall of if-else statements. 
+## 1. Singleton Pattern
 
-<span style="margin-left: 10px;"></span>
-I mean, it works, but the service now "knows" too much. It knows about payment providers, 
-notification channels, order persistence, and business flow. Every time we add a new payment provider or 
-notification channel, we have to modify this class.
-That means the class becomes harder to test, harder to maintain, and easier to break!
+The Singleton Pattern ensures that a class has only one instance and provides a global access point to it.
 
-<span style="margin-left: 10px;"></span>
-For example, adding a new payment provider like BEER_WALLET means opening BeerOrderService again and changing the if/else chain.
+Use it when:
+
+- Only one shared instance should exist.
+- You need centralized access to configuration, logging, caching, or application state.
+
+Use it carefully. Excessive use of Singleton can create hidden dependencies and make testing more difficult.
+
+### Example
+
+This logger is shared by the whole application:
 
 ```java
-if ("BEER_WALLET".equals(paymentProvider)) {
-    chargeWithBeerWallet(order);
-}
-```
+public class Logger {
+    private static final Logger INSTANCE = new Logger();
 
-<span style="margin-left: 10px;"></span>
-In a real backend system, this pattern repeats everywhere. The same provider checks might appear in the order service, 
-refund service, invoice service, payment audit service, and customer support service.
-That is how duplication spreads and once duplication spreads, the codebase becomes expensive to change.
+    private Logger() {
+    }
 
-<span style="margin-left: 10px;"></span>
-This is where design patterns become useful, where the goal is not to “apply patterns” just because it is how others say it should be done.
-The goal is to move responsibilities into the right places.
-Instead of one service knowing every payment implementation, we can use the Strategy Pattern and model each payment provider as a separate strategy.
-Instead of scattering notification creation logic across the application, we can use the Factory Pattern to resolve the correct notification handler.
-Instead of mixing database access with business logic, we can use the Repository Pattern to isolate persistence concerns.
-And the result is code that can grow independently.
+    public static Logger getInstance() {
+        return INSTANCE;
+    }
 
-<span style="margin-left: 10px;"></span>
-In this article, I will focus on three design patterns I regularly use in backend Java development.
-
-1. Strategy Pattern - Used when the application needs to choose between different behaviors.
-2. Factory Pattern - Used when the application needs to create or resolve the right implementation.
-3. Repository Pattern - Used when the application needs a clean boundary around database access.
-
-<span style="margin-left: 10px;"></span>
-One important thing before going further, design patterns should usually appear as a response to a real problem.
-I do not start a backend service by creating ten interfaces because “maybe one day” there will be multiple implementations.
-For example, if the beer shop only supports Stripe and there is no plan to support anything else, this might be enough:
-
-```java
-@Service
-public class BeerPaymentService {
-
-    public PaymentResult pay(BeerOrder order) {
-        System.out.println("Charging beer order with Stripe");
-
-        return new PaymentResult(
-            "stripe-transaction-id",
-            PaymentStatus.SUCCESS
-        );
+    public void log(String message) {
+        System.out.println(message);
     }
 }
 ```
 
-<span style="margin-left: 10px;"></span>
-This is simple and enough and the same idea applies to reusable components. 
-
-<span style="margin-left: 10px;"></span>
-Reusability is valuable, but only when we extract the right things.
-For example, this kind of duplicated beer price calculation is a good candidate for reuse:
-
 ```java
-BigDecimal total = beer.price()
-    .multiply(BigDecimal.valueOf(quantity))
-    .multiply(BigDecimal.ONE.add(taxRate));
+Logger logger = Logger.getInstance();
+logger.log("Application started");
 ```
 
-<span style="margin-left: 10px;"></span>
-If this logic appears in the order service, invoice service, refund service, and reporting service, then extracting it makes sense.
+### Why It Works
+
+The main benefit is control:
+
+- One instance.
+- One global access point.
+- One place to route shared behavior.
+
+That is useful when the object really is a shared service or shared state holder.
+
+### What To Watch Out For
+
+- Singleton can hide dependencies, because any class can reach for it directly.
+- It can make unit tests harder if the singleton holds mutable state.
+- It becomes risky if it grows into a global dumping ground.
+
+If you are using Spring, remember that singleton scope is already the default for many beans. You often do not 
+need to implement the pattern manually.
+
+## 2. Factory Method Pattern
+
+The Factory Method Pattern defines a method for creating objects while allowing subclasses to decide which object 
+type to create.
+
+Use it when:
+
+- Object creation should be separated from the code that uses the object.
+- Subclasses need to control which object is created.
+- New product types may be added later.
+
+This is useful when the caller should not need to know the concrete class.
+
+### Example
+
+Here we model notifications that can be sent by email or SMS:
 
 ```java
-public final class BeerPriceCalculator {
+interface Notification {
+    void send(String message);
+}
+```
 
-    private BeerPriceCalculator() {
+```java
+class EmailNotification implements Notification {
+    public void send(String message) {
+        System.out.println("Email: " + message);
     }
+}
+```
 
-    public static BigDecimal calculateTotal(
-        BigDecimal unitPrice,
-        int quantity,
-        BigDecimal taxRate
-    ) {
-        return unitPrice
-            .multiply(BigDecimal.valueOf(quantity))
-            .multiply(BigDecimal.ONE.add(taxRate));
+```java
+class SmsNotification implements Notification {
+    public void send(String message) {
+        System.out.println("SMS: " + message);
     }
 }
 ```
 
-<span style="margin-left: 10px;"></span>
-Now the logic has one home and that is useful reuse.
-
-<span style="margin-left: 10px;"></span>
-A good use of a pattern should make the code easier to read once you understand the domain. For example:
-
 ```java
-PaymentStrategy paymentStrategy =
-paymentStrategyResolver.resolve(order.paymentProvider());
+abstract class NotificationCreator {
+    public abstract Notification createNotification();
 
-PaymentResult result = paymentStrategy.pay(order);
-```
-
-<span style="margin-left: 10px;"></span>
-The order service does not need to know how Stripe works, how PayPal works, or how credits are validated. It only needs 
-to know that the selected payment strategy can process the beer order. That is a useful abstraction. The same applies here:
-
-```java
-BeerNotificationHandler handler =
-notificationFactory.getHandler(order.notificationChannel());
-
-handler.send(order);
-```
-
-<span style="margin-left: 10px;"></span>
-The service does not care whether the notification is sent by email or SMS. It asks for the right handler and delegates the work.
-The abstraction has a purpose it keeps the main business flow clean.
-
-<span style="margin-left: 10px;"></span>
-So the main idea of this article is simple:
-
-- The Strategy Pattern helps us switch between different behaviors without filling services with conditional logic.
-- The Factory Pattern helps us centralize the creation or resolution of the right implementation.
-- The Repository Pattern helps us keep database access separate from business rules.
-- And reusable components help us avoid repeating stable logic across different parts of the system.
-
-<span style="margin-left: 10px;"></span>
-None of these ideas are new.
-
-## Example Domain
-
-<span style="margin-left: 10px;"></span>
-Before jumping into the patterns, I want to define the domain we will use throughout the article.
-This matters because design patterns are easier to understand when they are connected to one consistent example.
-
-<span style="margin-left: 10px;"></span>
-Imagine a backend system for a craft beer shop.
-This shop sells beers from different breweries. Customers can search the catalog, add beers to an order, pay for the 
-order, and receive a confirmation.
-
-<span style="margin-left: 10px;"></span>
-The important thing is that this system has several areas where design patterns naturally appear. For example:
-- Payment providers vary.
-- Notification channels vary.
-- Database access should be isolated.
-- Shared calculations should not be duplicated.
-
-<span style="margin-left: 10px;"></span>
-That gives us a practical reason to use patterns like Strategy, Factory, and Repository.
-We are not adding patterns because the code needs to look sophisticated.
-We are adding them because the backend has real variation points.
-
-### Main Domain Objects
-
-```java
-
-import java.math.BigDecimal;
-
-public record Beer(
-    Long id,
-    String name,
-    String brewery,
-    BeerType type,
-    BigDecimal alcoholPercentage,
-    BigDecimal price
-) {
-}
-
-public enum BeerType {
-    IPA,
-    STOUT,
-    LAGER,
-    PILSNER,
-    SOUR,
-    WHEAT,
-    PORTER
+    public void notifyUser(String message) {
+        Notification notification = createNotification();
+        notification.send(message);
+    }
 }
 ```
 
 ```java
-import java.math.BigDecimal;
+class EmailNotificationCreator extends NotificationCreator {
+    public Notification createNotification() {
+        return new EmailNotification();
+    }
+}
+```
+
+```java
+NotificationCreator creator = new EmailNotificationCreator();
+creator.notifyUser("Your order has shipped.");
+```
+
+### Why It Works
+
+The creator knows the workflow, but not the concrete implementation details.
+
+That gives you:
+
+- Creation logic in one place.
+- Easier substitution of new notification types.
+- Less branching in the caller.
+
+### What To Watch Out For
+
+- Do not turn the factory into a large `switch` statement if the main purpose is still just object creation.
+- If object creation is trivial and never changes, a direct constructor may be enough.
+- Keep the abstraction honest: use it because object creation varies, not because interfaces feel sophisticated.
+
+## 3. Observer Pattern
+
+The Observer Pattern creates a one-to-many relationship between objects. When the subject changes, all registered 
+observers are notified automatically.
+
+Use it when:
+
+- Multiple objects must react to the same event.
+- You are building event-driven systems.
+- The subject should not depend directly on its listeners.
+
+This pattern is a natural fit when updates need to fan out to several consumers.
+
+### Example
+
+A news publisher notifies subscribers when a new article becomes available:
+
+```java
+interface Observer {
+    void update(String message);
+}
+```
+
+```java
+class EmailSubscriber implements Observer {
+    public void update(String message) {
+        System.out.println("Email received: " + message);
+    }
+}
+```
+
+```java
+import java.util.ArrayList;
 import java.util.List;
 
-public record BeerOrder(
-    Long id,
-    Long customerId,
-    List<BeerOrderItem> items,
-    BigDecimal totalAmount,
-    BeerOrderStatus status,
-    PaymentProvider paymentProvider,
-    NotificationChannel notificationChannel
-) {
-}
-```
+class NewsPublisher {
+    private final List<Observer> observers = new ArrayList<>();
 
-```java
-import java.math.BigDecimal;
-
-public record BeerOrderItem(
-    Long beerId,
-    String beerName,
-    int quantity,
-    BigDecimal unitPrice
-) {
-}
-```
-
-```java
-public enum BeerOrderStatus {
-    CREATED,
-    PAID,
-    PAYMENT_FAILED,
-    CONFIRMED,
-    CANCELLED
-}
-```
-
-
-```java
-public enum PaymentProvider {
-    STRIPE,
-    PAYPAL,
-    BREWERY_CREDIT,
-    CASH_ON_DELIVERY
-}
-```
-
-```java
-public record PaymentResult(
-    String transactionId,
-    PaymentStatus status,
-    String message
-) {
-    public static PaymentResult success(String transactionId) {
-        return new PaymentResult(
-            transactionId,
-            PaymentStatus.SUCCESS,
-            "Payment processed successfully"
-        );
+    public void subscribe(Observer observer) {
+        observers.add(observer);
     }
 
-    public static PaymentResult failed(String message) {
-        return new PaymentResult(
-            null,
-            PaymentStatus.FAILED,
-            message
-        );
+    public void publish(String news) {
+        for (Observer observer : observers) {
+            observer.update(news);
+        }
     }
 }
 ```
 
+```java
+NewsPublisher publisher = new NewsPublisher();
+publisher.subscribe(new EmailSubscriber());
+
+publisher.publish("A new article is available.");
+```
+
+### Why It Works
+
+The publisher does not need to know who is listening.
+It just sends the update and lets observers react.
+
+That gives you:
+
+- Loose coupling between the source and the listeners.
+- Easy addition of new subscribers.
+- A clean way to model change propagation.
+
+### What To Watch Out For
+
+- Too many observers can make behavior harder to trace.
+- Notification order may matter, so be deliberate.
+- If observers are long-lived, make sure they can unsubscribe to avoid leaks.
+
+## 4. Decorator Pattern
+
+The Decorator Pattern adds new behavior to an object without changing its original class.
+
+Use it when:
+
+- Features need to be added dynamically.
+- Inheritance would create too many subclasses.
+- Several optional behaviors may be combined.
+
+This pattern is ideal when the base object is simple, but extra features should be layered on top.
+
+### Example
+
+A basic coffee can be decorated with milk:
 
 ```java
-public enum PaymentStatus {
-    SUCCESS,
-    FAILED
+interface Coffee {
+    String getDescription();
+    double getPrice();
 }
 ```
 
 ```java
-public enum NotificationChannel {
-    EMAIL,
-    SMS,
-    PUSH,
+class BasicCoffee implements Coffee {
+    public String getDescription() {
+        return "Coffee";
+    }
+
+    public double getPrice() {
+        return 2.00;
+    }
 }
 ```
 
 ```java
-public record Customer(
-    Long id,
-    String name,
-    String email,
-    String phoneNumber
-) {
+class MilkDecorator implements Coffee {
+    private final Coffee coffee;
+
+    public MilkDecorator(Coffee coffee) {
+        this.coffee = coffee;
+    }
+
+    public String getDescription() {
+        return coffee.getDescription() + ", milk";
+    }
+
+    public double getPrice() {
+        return coffee.getPrice() + 0.50;
+    }
 }
 ```
 
+```java
+Coffee coffee = new MilkDecorator(new BasicCoffee());
+
+System.out.println(coffee.getDescription()); // Coffee, milk
+System.out.println(coffee.getPrice());       // 2.50
+```
+
+### Why It Works
+
+The base object stays untouched.
+Extra features are composed around it.
+
+That gives you:
+
+- Flexible combination of behaviors.
+- No explosion of subclasses.
+- Reusable wrappers that stay focused.
+
+### What To Watch Out For
+
+- Decorators should preserve the same interface as the wrapped object.
+- Deep chains of decorators can become hard to read if overused.
+- If the "extra behavior" is really a separate business process, another pattern may fit better.
+
+## 5. Mediator Pattern
+
+The Mediator Pattern introduces a central object that manages communication between related objects.
+
+Instead of objects communicating directly with each other, they communicate through the mediator.
+
+Use it when:
+
+- Many objects depend directly on one another.
+- Communication logic has become difficult to manage.
+- You want to reduce coupling between components.
+
+This is a good pattern when interaction rules matter more than direct object references.
+
+### Example
+
+A chat room coordinates users:
 
 ```java
+interface ChatMediator {
+    void sendMessage(String message, User sender);
+}
+```
+
+```java
+import java.util.ArrayList;
 import java.util.List;
 
-public record BeerOrderRequest(
-    Long customerId,
-    List<BeerOrderItemRequest> items,
-    PaymentProvider paymentProvider,
-    NotificationChannel notificationChannel
-) {
-}
-```
+class ChatRoom implements ChatMediator {
+    private final List<User> users = new ArrayList<>();
 
-```java
-public record BeerOrderItemRequest(
-    Long beerId,
-    int quantity
-) {
-}
-```
-
-## 3. Strategy Pattern — Handling Different Beer Payment Providers
-
-<span style="margin-left: 10px;"></span>
-The Strategy Pattern is useful when we have multiple ways to do something and we need to pick one at runtime.
-In our beer shop, customers can pay using Stripe, PayPal, brewery credits, or cash on delivery.
-Without the Strategy Pattern, the order service would need to know how to handle each payment method.
-
-<span style="margin-left: 10px;"></span>
-Let me show the problematic version first. Without Strategy, we might end up with something like this:
-
-```java
-@Service
-public class BeerOrderServiceBeforeStrategy {
-
-    public void placeOrder(BeerOrder order) {
-        if (PaymentProvider.STRIPE.equals(order.paymentProvider())) {
-            processStripePayment(order);
-        } else if (PaymentProvider.PAYPAL.equals(order.paymentProvider())) {
-            processPayPalPayment(order);
-        } else if (PaymentProvider.BREWERY_CREDIT.equals(order.paymentProvider())) {
-            processBreweryCreditPayment(order);
-        } else if (PaymentProvider.CASH_ON_DELIVERY.equals(order.paymentProvider())) {
-            processCashOnDelivery(order);
-        }
-        saveOrder(order);
+    public void addUser(User user) {
+        users.add(user);
     }
 
-    private void processStripePayment(BeerOrder order) {
-        //stripe-specific logic
-    }
-
-    private void processPayPalPayment(BeerOrder order) {
-        //PayPal-specific logic
-    }
-
-    private void processBreweryCreditPayment(BeerOrder order) {
-        //brewery credit-specific logic
-    }
-
-    private void processCashOnDelivery(BeerOrder order) {
-        // cash on delivery-specific logic
-    }
-
-    private void saveOrder(BeerOrder order) {
-        //save order
-    }
-}
-```
-
-<span style="margin-left: 10px;"></span>
-This works, but the problem is obvious. Every payment provider is mixed into one service. The class knows too much about payment details.
-When we need to add a new provider or change Stripe logic, we have to open this service and modify it.
-We also have to test all the if-else branches and every payment logic is mixed together.
-
-<span style="margin-left: 10px;"></span>
-The Strategy Pattern solves this by extracting each payment method into its own strategy.
-
-```java
-public interface PaymentStrategy {
-    PaymentProvider provider();
-    PaymentResult pay(BeerOrder order);
-}
-```
-
-<span style="margin-left: 10px;"></span>
-Now each payment provider has its own implementation:
-
-```java
-@Service
-public class StripePaymentStrategy implements PaymentStrategy {
-
-    @Override
-    public PaymentProvider provider() {
-        return PaymentProvider.STRIPE;
-    }
-
-    @Override
-    public PaymentResult pay(BeerOrder order) {
-        System.out.println("Processing payment with Stripe for order " + order.id());
-        return PaymentResult.success("stripe-" + order.id());
-    }
-}
-```
-
-```java
-@Service
-public class PayPalPaymentStrategy implements PaymentStrategy {
-
-    @Override
-    public PaymentProvider provider() {
-        return PaymentProvider.PAYPAL;
-    }
-
-    @Override
-    public PaymentResult pay(BeerOrder order) {
-        System.out.println("Processing payment with PayPal for order " + order.id());
-        return PaymentResult.success("paypal-" + order.id());
-    }
-}
-```
-
-```java
-@Service
-public class BreweryCreditPaymentStrategy implements PaymentStrategy {
-
-    private final BreweryCreditService creditService;
-
-    public BreweryCreditPaymentStrategy(BreweryCreditService creditService) {
-        this.creditService = creditService;
-    }
-
-    @Override
-    public PaymentProvider provider() {
-        return PaymentProvider.BREWERY_CREDIT;
-    }
-
-    @Override
-    public PaymentResult pay(BeerOrder order) {
-        boolean debited = creditService.debit(order.customerId(), order.totalAmount());
-        if (debited) {
-            return PaymentResult.success("credit-" + order.id());
-        }
-        return PaymentResult.failed("Insufficient brewery credits");
-    }
-}
-```
-
-<span style="margin-left: 10px;"></span>
-Now we need a component that resolves the right strategy based on the payment provider:
-
-```java
-@Component
-public class PaymentStrategyResolver {
-
-    private final Map<PaymentProvider, PaymentStrategy> strategies;
-
-    public PaymentStrategyResolver(List<PaymentStrategy> strategyList) {
-        this.strategies = strategyList.stream()
-            .collect(Collectors.toMap(
-                PaymentStrategy::provider,
-                Function.identity()
-            ));
-    }
-
-    public PaymentStrategy resolve(PaymentProvider provider) {
-        return Optional.ofNullable(strategies.get(provider))
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Unsupported payment provider: " + provider
-            ));
-    }
-}
-```
-
-<span style="margin-left: 10px;"></span>
-The magic here is that Spring automatically injects all implementations of `PaymentStrategy` as a List.
-We then build a map from provider to strategy. In my opinion, this is extremely clean.
-
-<span style="margin-left: 10px;"></span>
-Now the order service becomes much simpler:
-
-```java
-@Service
-public class BeerOrderServiceAfterStrategy {
-
-    private final PaymentStrategyResolver paymentStrategyResolver;
-
-    public BeerOrderServiceAfterStrategy(PaymentStrategyResolver paymentStrategyResolver) {
-        this.paymentStrategyResolver = paymentStrategyResolver;
-    }
-
-    public void placeOrder(BeerOrder order) {
-        PaymentStrategy paymentStrategy = paymentStrategyResolver.resolve(order.paymentProvider());
-        PaymentResult result = paymentStrategy.pay(order);
-
-        if (PaymentStatus.SUCCESS.equals(result.status())) {
-            order = order.withStatus(BeerOrderStatus.PAID);
-        } else {
-            order = order.withStatus(BeerOrderStatus.PAYMENT_FAILED);
-        }
-
-        saveOrder(order);
-    }
-
-    private void saveOrder(BeerOrder order) {
-        //save order
-    }
-}
-```
-
-<span style="margin-left: 10px;"></span>
-The service no longer knows how Stripe works, how PayPal works, or how brewery credits work.
-It just asks for the right strategy and delegates. If we need to add a new payment provider like Apple Pay, we create a 
-new strategy and register it with Spring.
-The order service does not change at all. 
-
-<span style="margin-left: 10px;"></span>
-The benefits are clear:
-- Each strategy is isolated and testable in isolation.
-- Adding a new payment provider does not require changing existing code.
-- The order service is simpler and focused on business flow, not payment details.
-- Strategies can depend on different services (like `BreweryCreditService`) without bloating the order service.
-
-## 4. Factory Pattern — Creating Beer Notification Handlers
-
-<span style="margin-left: 10px;"></span>
-The Factory Pattern is about centralizing object creation or resolution.
-In the beer shop, after an order is placed, we need to notify the customer.
-But notifications can be sent through different channels: email, SMS or push notifications to the brewery team.
-
-<span style="margin-left: 10px;"></span>
-Without a factory, notification creation logic might be scattered across the codebase:
-
-```java
-@Service
-public class BeerOrderServiceBeforeFactory {
-
-    public void placeOrder(BeerOrder order) {
-        //process order
-
-        if (NotificationChannel.EMAIL.equals(order.notificationChannel())) {
-            new EmailNotificationHandler().send(order);
-        } else if (NotificationChannel.SMS.equals(order.notificationChannel())) {
-            new SmsNotificationHandler().send(order);
-        } else if (NotificationChannel.PUSH.equals(order.notificationChannel())) {
-            new PushNotificationHandler().send(order);
-        }
-    }
-}
-```
-
-<span style="margin-left: 10px;"></span>
-This is not ideal. Object creation is mixed with business logic. If we add a new notification channel in the refund service, 
-payment service, and shipping service, we have to duplicate these checks everywhere.
-
-<span style="margin-left: 10px;"></span>
-The Factory Pattern centralizes this. First, we define a common interface:
-
-```java
-public interface BeerNotificationHandler {
-    NotificationChannel channel();
-    void send(BeerOrder order);
-}
-```
-
-<span style="margin-left: 10px;"></span>
-Then we implement each notification channel:
-
-```java
-@Component
-public class EmailBeerNotificationHandler implements BeerNotificationHandler {
-
-    private final EmailService emailService;
-
-    public EmailBeerNotificationHandler(EmailService emailService) {
-        this.emailService = emailService;
-    }
-
-    @Override
-    public NotificationChannel channel() {
-        return NotificationChannel.EMAIL;
-    }
-
-    @Override
-    public void send(BeerOrder order) {
-        System.out.println("Sending order confirmation to " + order.customerId() + " via email");
-        emailService.send(order.customerId(), "Your beer order is confirmed!");
-    }
-}
-```
-
-```java
-@Component
-public class SmsBeerNotificationHandler implements BeerNotificationHandler {
-
-    private final SmsService smsService;
-
-    public SmsBeerNotificationHandler(SmsService smsService) {
-        this.smsService = smsService;
-    }
-
-    @Override
-    public NotificationChannel channel() {
-        return NotificationChannel.SMS;
-    }
-
-    @Override
-    public void send(BeerOrder order) {
-        System.out.println("Sending SMS confirmation to " + order.customerId());
-        smsService.send(order.customerId(), "Beer order confirmed!");
-    }
-}
-```
-
-<span style="margin-left: 10px;"></span>
-Now the factory:
-
-```java
-@Component
-public class BeerNotificationFactory {
-
-    private final Map<NotificationChannel, BeerNotificationHandler> handlers;
-
-    public BeerNotificationFactory(List<BeerNotificationHandler> handlerList) {
-        this.handlers = handlerList.stream()
-            .collect(Collectors.toMap(
-                BeerNotificationHandler::channel,
-                Function.identity()
-            ));
-    }
-
-    public BeerNotificationHandler getHandler(NotificationChannel channel) {
-        return Optional.ofNullable(handlers.get(channel))
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Unsupported notification channel: " + channel
-            ));
-    }
-}
-```
-
-<span style="margin-left: 10px;"></span>
-And now any service can use it:
-
-```java
-@Service
-@RequiredArgsConstructor
-public class BeerOrderServiceWithFactory {
-
-    private final BeerNotificationFactory notificationFactory;
-
-    public void placeOrder(BeerOrder order) {
-        BeerNotificationHandler handler = notificationFactory.getHandler(order.notificationChannel());
-        handler.send(order);
-    }
-}
-```
-
-<span style="margin-left: 10px;"></span>
-This is much cleaner! The service does not know how to create or construct handlers. It just asks the factory for the right one.
-The factory handles all the complexity like dependency injection, configuration, and error handling.
-
-### Factory vs Strategy
-
-<span style="margin-left: 10px;"></span>
-Factory and Strategy patterns may look similar. They both have an interface with multiple implementations, 
-and they both use a resolver or factory to pick the right one. But they solve different problems:
-
-<span style="margin-left: 10px;"></span>
-- **Strategy** is about choosing behavior. It answers the question: "How should I do this?" Multiple strategies 
-represent different ways to accomplish the same goal. A payment strategy is still about paying, just using different methods.
-- **Factory** is about creating or resolving objects. It answers the question: "Which object should I use?" The factory 
-handles the construction, configuration, and lifecycle of objects.
-
-<span style="margin-left: 10px;"></span>
-In our example, the payment strategies all implement the same pay behavior but in different ways.
-The notification factory creates different handler objects, each designed to work with a different channel.
-The strategy is about the algorithm. The factory is about object creation.
-
-## 5. Repository Pattern
-
-<span style="margin-left: 10px;"></span>
-The Repository Pattern is about creating a boundary between business logic and persistence logic.
-In the backend, we need to query beers, find customers, retrieve orders, and manage stock.
-Without the Repository Pattern, business services often mix this database access with business decisions.
-
-<span style="margin-left: 10px;"></span>
-The Repository Pattern says to create an interface that represents the data access layer.
-The service depends on this interface, not on the database directly.
-
-```java
-public interface BeerRepository extends JpaRepository<BeerEntity, Long> {
-
-    List<BeerEntity> findByType(BeerType type);
-
-    Optional<BeerEntity> findByNameAndBrewery(String name, String brewery);
-
-    List<BeerEntity> findAvailableBeers();
-}
-```
-
-<span style="margin-left: 10px;"></span>
-The interface is clean and focused on what data we need. The service does not need to know about SQL, JPA, or database schemas.
-It just calls repository methods.
-
-```java
-@Service
-public class BeerCatalogService {
-
-    private final BeerRepository beerRepository;
-
-    public BeerCatalogService(BeerRepository beerRepository) {
-        this.beerRepository = beerRepository;
-    }
-
-    public List<Beer> findAvailableIpas() {
-        return beerRepository.findByType(BeerType.IPA)
-            .stream()
-            .filter(BeerEntity::isAvailable)
-            .map(BeerMapper::toDomain)
-            .toList();
-    }
-
-    public Optional<Beer> findBeerByNameAndBrewery(String name, String brewery) {
-        return beerRepository.findByNameAndBrewery(name, brewery)
-            .map(BeerMapper::toDomain);
-    }
-}
-```
-
-<span style="margin-left: 10px;"></span>
-Similarly for orders:
-
-```java
-public interface BeerOrderRepository extends JpaRepository<BeerOrderEntity, Long> {
-
-    List<BeerOrderEntity> findByCustomerIdAndStatus(Long customerId, BeerOrderStatus status);
-
-    Optional<BeerOrderEntity> findByIdAndCustomerId(Long orderId, Long customerId);
-}
-```
-
-```java
-@Service
-public class BeerOrderQueryService {
-
-    private final BeerOrderRepository orderRepository;
-
-    public BeerOrderQueryService(BeerOrderRepository orderRepository) {
-        this.orderRepository = orderRepository;
-    }
-
-    public List<BeerOrder> getCustomerOrders(Long customerId) {
-        return orderRepository.findByCustomerIdAndStatus(customerId, BeerOrderStatus.PAID)
-            .stream()
-            .map(BeerOrderMapper::toDomain)
-            .toList();
-    }
-
-    public BeerOrder getOrder(Long orderId, Long customerId) {
-        return orderRepository.findByIdAndCustomerId(orderId, customerId)
-            .map(BeerOrderMapper::toDomain)
-            .orElseThrow(() -> new OrderNotFoundException(orderId));
-    }
-}
-```
-
-<span style="margin-left: 10px;"></span>
-The key benefit is testing. We can mock the repository:
-
-```java
-@Test
-void testFindAvailableIpas() {
-    BeerRepository mockRepository = mock(BeerRepository.class);
-    BeerEntity ipaEntity = new BeerEntity(1L, "IPA Beer", "Brewery", BeerType.IPA, true);
-    when(mockRepository.findByType(BeerType.IPA)).thenReturn(List.of(ipaEntity));
-
-    BeerCatalogService service = new BeerCatalogService(mockRepository);
-    List<Beer> result = service.findAvailableIpas();
-
-    assertEquals(1, result.size());
-    verify(mockRepository).findByType(BeerType.IPA);
-}
-```
-
-<span style="margin-left: 10px;"></span>
-The service is tested without touching a database. That is powerful.
-
-### What Should Not Go Into a Repository
-
-<span style="margin-left: 10px;"></span>
-The Repository Pattern has a clear scope. It should only handle data access. It should not include:
-
-<span style="margin-left: 10px;"></span>
-- Payment logic: A repository should not process payments or call payment gateways. That belongs in a service or strategy.
-- Notification logic: A repository should not send emails or SMS.
-- Business decision rules: A repository should not decide if a discount applies or if an order is valid. That is business logic, not data access.
-- API formatting: A repository should not transform data into JSON or API responses. That is the controller's job.
-
-<span style="margin-left: 10px;"></span>
-A repository is focused: it queries, saves, and updates data. Period. If you find yourself thinking "but I could also 
-validate here" or "I could also call an external service here", stop. That belongs elsewhere.
-
-## 6. Combining the Patterns in One Backend Flow
-
-<span style="margin-left: 10px;"></span>
-Now let's see how these patterns work together in a real backend scenario.
-A customer places an order for a pack of beers. The backend needs to:
-1. Load beer data from the repository
-2. Validate stock availability
-3. Process payment using the right strategy
-4. Send a notification using the right handler
-5. Save the order and return a result
-
-<span style="margin-left: 10px;"></span>
-Here is the service that orchestrates this flow:
-
-```java
-@Service
-public class BeerOrderService {
-
-    private final BeerRepository beerRepository;
-    private final BeerOrderRepository orderRepository;
-    private final PaymentStrategyResolver paymentStrategyResolver;
-    private final BeerNotificationFactory notificationFactory;
-
-    public BeerOrderService(
-        BeerRepository beerRepository,
-        BeerOrderRepository orderRepository,
-        PaymentStrategyResolver paymentStrategyResolver,
-        BeerNotificationFactory notificationFactory
-    ) {
-        this.beerRepository = beerRepository;
-        this.orderRepository = orderRepository;
-        this.paymentStrategyResolver = paymentStrategyResolver;
-        this.notificationFactory = notificationFactory;
-    }
-
-    public BeerOrderResult placeOrder(BeerOrderRequest request) {
-        //step 1 - load beers from repository and validate stock
-        List<BeerEntity> beers = new ArrayList<>();
-        for (BeerOrderItemRequest item : request.items()) {
-            BeerEntity beer = beerRepository.findById(item.beerId())
-                .orElseThrow(() -> new BeerNotFoundException(item.beerId()));
-
-            if (beer.stock() < item.quantity()) {
-                throw new InsufficientStockException(item.beerId());
+    public void sendMessage(String message, User sender) {
+        for (User user : users) {
+            if (user != sender) {
+                user.receive(message);
             }
-
-            beers.add(beer);
-        }
-
-        //step 2 - reate order entity
-        BeerOrderEntity order = createOrderEntity(request, beers);
-
-        //step 3 - process payment using strategy
-        PaymentStrategy paymentStrategy = paymentStrategyResolver.resolve(request.paymentProvider());
-        PaymentResult paymentResult = paymentStrategy.pay(BeerOrderMapper.toOrder(order));
-
-        if (PaymentStatus.FAILED.equals(paymentResult.status())) {
-            order.setStatus(BeerOrderStatus.PAYMENT_FAILED);
-            orderRepository.save(order);
-            throw new PaymentFailedException(paymentResult.message());
-        }
-
-        //step 4 - update order status and save
-        order.setStatus(BeerOrderStatus.PAID);
-        order.setTransactionId(paymentResult.transactionId());
-        BeerOrderEntity savedOrder = orderRepository.save(order);
-
-        //step 5 - send notification using factory
-        BeerNotificationHandler handler = notificationFactory.getHandler(request.notificationChannel());
-        handler.send(BeerOrderMapper.toOrder(savedOrder));
-
-        return BeerOrderResult.success(paymentResult.transactionId(), savedOrder.getId());
-    }
-
-    private BeerOrderEntity createOrderEntity(BeerOrderRequest request, List<BeerEntity> beers) {
-        BigDecimal total = beers.stream()
-            .map(BeerEntity::getPrice)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        return new BeerOrderEntity(
-            request.customerId(),
-            beers,
-            total,
-            BeerOrderStatus.CREATED,
-            request.paymentProvider(),
-            request.notificationChannel()
-        );
-    }
-}
-```
-
-```java
-public record BeerOrderResult(
-    String transactionId,
-    Long orderId,
-    String message
-) {
-    public static BeerOrderResult success(String transactionId, Long orderId) {
-        return new BeerOrderResult(transactionId, orderId, "Order placed successfully");
-    }
-}
-```
-
-<span style="margin-left: 10px;"></span>
-Notice how clean this is. The service:
-- Uses repositories to fetch data without knowing about SQL.
-- Uses the payment strategy resolver to pick the right payment method without knowing how they work.
-- Uses the notification factory to pick the right handler without knowing how to construct it.
-- Focuses purely on business flow: validate, pay, notify, save.
-
-<span style="margin-left: 10px;"></span>
-Each pattern handles its concern. The repository handles data access.
-The strategy handles payment behavior. The factory handles notification resolution.
-The service orchestrates them. This is maintainable, testable, and easy to extend.
-
-<span style="margin-left: 10px;"></span>
-If we need to add Apple Pay, we create a new strategy and register it. The order service does not change.
-If we need to add a new notification channel, we add a handler. The order service does not change.
-If we need a new query on beers, we add a repository method. The service calls it without caring about the SQL.
-
-## 7. Reusable Shared Libraries and Components
-
-<span style="margin-left: 10px;"></span>
-So far, we have talked about patterns within a single service, but we often have multiple services.
-A beer platform might have:
-- A catalog service
-- An order service
-- A payment service
-- A notification service
-- A reporting service
-
-<span style="margin-left: 10px;"></span>
-As these services grow, you start noticing repeated code:
-- Beer validation (checking alcohol content, price, availability)
-- Brewery formatting (normalizing brewery names)
-- Money calculations (tax, discounts, totals)
-- Order error handling (specific exceptions for order failures)
-- Notification abstractions (sending to different channels)
-
-<span style="margin-left: 10px;"></span>
-When you see this repetition across multiple services, that is when you extract shared components.
-In a multi-module Maven or Gradle project, you might structure it like this:
-
-<span style="margin-left: 10px;"></span>
-```
-beer-platform/
-├── beer-catalog-service/
-│   ├── src/main/java/com/beer/catalog/
-│   └── pom.xml
-├── beer-order-service/
-│   ├── src/main/java/com/beer/order/
-│   └── pom.xml
-├── beer-payment-service/
-│   ├── src/main/java/com/beer/payment/
-│   └── pom.xml
-├── beer-notification-service/
-│   ├── src/main/java/com/beer/notification/
-│   └── pom.xml
-└── beer-common/
-    ├── src/main/java/com/beer/common/
-    │   ├── validation/
-    │   ├── exceptions/
-    │   ├── money/
-    │   ├── mappers/
-    │   └── events/
-    └── pom.xml
-```
-
-<span style="margin-left: 10px;"></span>
-The `beer-common` module contains shared code that all services depend on. For example:
-
-<span style="margin-left: 10px;"></span>
-```java
-public final class BeerValidator {
-
-    private BeerValidator() {
-    }
-
-    public static void validateBeerPrice(BigDecimal price) {
-        if (price.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new InvalidBeerException("Beer price must be greater than zero");
-        }
-    }
-
-    public static void validateAlcoholContent(BigDecimal alcoholPercentage) {
-        if (alcoholPercentage.compareTo(BigDecimal.ZERO) < 0 
-            || alcoholPercentage.compareTo(new BigDecimal("100")) > 0) {
-            throw new InvalidBeerException("Alcohol percentage must be between 0 and 100");
-        }
-    }
-}
-```
-
-<span style="margin-left: 10px;"></span>
-```java
-public final class BeerPriceCalculator {
-
-    private BeerPriceCalculator() {
-    }
-
-    public static BigDecimal calculateTotal(
-        BigDecimal unitPrice,
-        int quantity,
-        BigDecimal taxRate
-    ) {
-        return unitPrice
-            .multiply(BigDecimal.valueOf(quantity))
-            .multiply(BigDecimal.ONE.add(taxRate));
-    }
-
-    public static BigDecimal applyDiscount(BigDecimal total, BigDecimal discountRate) {
-        return total.multiply(BigDecimal.ONE.subtract(discountRate));
-    }
-}
-```
-
-<span style="margin-left: 10px;"></span>
-```java
-public class BeerNotFoundException extends RuntimeException {
-    public BeerNotFoundException(Long beerId) {
-        super("Beer with ID " + beerId + " not found");
-    }
-}
-
-public class InsufficientStockException extends RuntimeException {
-    public InsufficientStockException(Long beerId) {
-        super("Insufficient stock for beer ID " + beerId);
-    }
-}
-```
-
-<span style="margin-left: 10px;"></span>
-```java
-public final class BeerOrderMapper {
-
-    private BeerOrderMapper() {
-    }
-
-    public static BeerOrderRequest fromJson(String json) {
-        // Parse JSON to BeerOrderRequest
-        return null; // Simplified for this example
-    }
-
-    public static BeerOrder toDomain(BeerOrderEntity entity) {
-        // Map entity to domain
-        return null; // Simplified for this example
-    }
-}
-```
-
-<span style="margin-left: 10px;"></span>
-Now all services can depend on `beer-common` and use these shared utilities:
-
-<span style="margin-left: 10px;"></span>
-```java
-@Service
-public class BeerOrderValidationService {
-
-    public void validateOrderRequest(BeerOrderRequest request) {
-        for (BeerOrderItemRequest item : request.items()) {
-            BeerValidator.validateBeerPrice(item.getPrice());
         }
     }
 }
 ```
 
 ```java
-@Service
-public class BeerCatalogService {
+class User {
+    private final String name;
+    private final ChatMediator mediator;
 
-    public BigDecimal calculateOrderTotal(List<Beer> beers, BigDecimal taxRate) {
-        return beers.stream()
-            .map(beer -> BeerPriceCalculator.calculateTotal(
-                beer.price(),
-                1,
-                taxRate
-            ))
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    public User(String name, ChatMediator mediator) {
+        this.name = name;
+        this.mediator = mediator;
+    }
+
+    public void send(String message) {
+        mediator.sendMessage(message, this);
+    }
+
+    public void receive(String message) {
+        System.out.println(name + " received: " + message);
     }
 }
 ```
 
-<span style="margin-left: 10px;"></span>
-The key insight is that these shared components should be:
-- Small and focused: Each component solves one problem.
-- Stable: They should not change often. Once beer validation is settled, it should stay that way.
-- Reused multiple times: If a component is used in only one service, it probably should not be shared yet.
+```java
+ChatRoom room = new ChatRoom();
 
-### Reusable Does Not Mean Generic Too Early
+User alice = new User("Alice", room);
+User bob = new User("Bob", room);
 
-<span style="margin-left: 10px;"></span>
-A common mistake is creating "reusable" components before they are actually needed.
-For example, do not create a generic "BeerCalculator" that handles everything related to beers and might be used "someday".
+room.addUser(alice);
+room.addUser(bob);
 
-<span style="margin-left: 10px;"></span>
-Instead, extract components when you see real duplication. If the beer price calculation appears in the order service, 
-the invoice service, and the refund service, then extract `BeerPriceCalculator`. But if it only appears in the order 
-service, leave it there for now. You are not saving time by extracting something that is not repeated yet.
+alice.send("Hello everyone");
+```
 
-<span style="margin-left: 10px;"></span>
-The same applies to exceptions. Do not create a huge exception hierarchy "just in case". Create exceptions when you 
-need them. `BeerNotFoundException` exists because multiple services need to handle the case when a beer is not found.
-`InsufficientStockException` exists because the order service needs to tell the customer why an order failed.
-These exceptions are useful abstractions because they are reused.
+### Why It Works
 
-<span style="margin-left: 10px;"></span>
-Shared components should emerge from real problems, not from theoretical planning.
+The mediator handles the communication policy.
+The users stay focused on sending and receiving messages.
 
-## Conclusion
+That gives you:
 
-<span style="margin-left: 10px;"></span>
-Design patterns in backend Java are not about following rules or making code look advanced.
-They are about managing complexity as the system grows.
+- Less direct coupling.
+- One place to manage interaction rules.
+- Easier changes to communication behavior.
 
-<span style="margin-left: 10px;"></span>
-- Use the Strategy Pattern when you have multiple ways to do something (payment providers, notification channels). 
-It lets you add new behaviors without modifying existing code.
-- Use the Factory Pattern when object creation becomes scattered. It centralizes construction and dependency injection.
-- Use the Repository Pattern to keep database access out of business logic. It makes services easier to test and data access easier to change.
-- Extract reusable components when you see the same code repeated across multiple services. But only extract when duplication is real, not theoretical.
+### What To Watch Out For
 
-<span style="margin-left: 10px;"></span>
-The goal is always the same, make the code easier to understand, easier to change, and easier to test.
-If a pattern does not achieve that, skip it. Patterns are tools, not laws!
+- A mediator can become a "god object" if it starts doing too much.
+- Keep it focused on coordination, not on all business logic.
+- If the communication is simple, direct calls may be better.
+
+## 6. Facade Pattern
+
+The Facade Pattern provides a simple interface to a complex group of classes or subsystems.
+
+Use it when:
+
+- A system has many complicated components.
+- Clients only need a small number of common operations.
+- You want to hide implementation details.
+
+This is one of the most useful patterns when a workflow touches several subsystems.
+
+### Example
+
+A home cinema can be started with one facade instead of several separate calls:
+
+```java
+class Projector {
+    public void turnOn() {
+        System.out.println("Projector on");
+    }
+}
+```
+
+```java
+class SoundSystem {
+    public void turnOn() {
+        System.out.println("Sound system on");
+    }
+}
+```
+
+```java
+class StreamingService {
+    public void playMovie() {
+        System.out.println("Movie started");
+    }
+}
+```
+
+```java
+class HomeCinemaFacade {
+    private final Projector projector = new Projector();
+    private final SoundSystem soundSystem = new SoundSystem();
+    private final StreamingService streamingService = new StreamingService();
+
+    public void watchMovie() {
+        projector.turnOn();
+        soundSystem.turnOn();
+        streamingService.playMovie();
+    }
+}
+```
+
+```java
+HomeCinemaFacade cinema = new HomeCinemaFacade();
+cinema.watchMovie();
+```
+
+### Why It Works
+
+The facade gives the caller one entry point.
+It hides the internal sequence and the subsystem details.
+
+That gives you:
+
+- A cleaner API.
+- Less knowledge required from the caller.
+- A natural place for common orchestration.
+
+### What To Watch Out For
+
+- A facade should simplify, not become another layer of business rules.
+- If it gets too large, split it into smaller facades.
+- If callers still need all the internals, the facade is probably not doing enough.
+
+## How These Patterns Compare
+
+- **Singleton**: one shared instance.
+- **Factory Method**: create the right object through subclass-controlled creation.
+- **Observer**: notify multiple listeners when one thing changes.
+- **Decorator**: add optional behavior without changing the base object.
+- **Mediator**: centralize communication between related objects.
+- **Facade**: provide one simple entry point to a complex subsystem.
+
+## Common Mistakes
+
+- Using Singleton for convenience instead of necessity.
+- Creating factories before there is more than one real variant.
+- Letting observers become hidden business logic with side effects everywhere.
+- Stacking decorators so deeply that the object graph becomes unreadable.
+- Turning the mediator into a dumping ground.
+- Writing a facade that is just a thin pass-through with no real simplification.
+
+## Final Guidance
+
+- Use **Singleton** when one shared instance is the right model.
+- Use **Factory Method** when object creation depends on type-specific logic.
+- Use **Observer** when several parts must react to the same event.
+- Use **Decorator** when behavior should be composable.
+- Use **Mediator** when direct communication is getting out of hand.
+- Use **Facade** when a complex workflow needs one clear entry point.
+
+That is what makes the difference between pattern knowledge and pattern expertise: not using every pattern 
+everywhere, but using the right one for the problem in front of you.
