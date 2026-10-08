@@ -4,6 +4,10 @@ title: JVM Garbage Collection - What Actually Matters in Production?
 date: 2026-02-25 10:59:00-0400
 description: JVM Garbage Collection in Production Systems
 tags:
+  - java
+  - jvm
+  - garbage collection
+  - performance
 categories:
 giscus_comments: false
 related_posts: false
@@ -1566,7 +1570,6 @@ rate, GC logs, heap usage after collection, live set growth, thread pools, datab
 The core lesson is simple, GC performance starts in application design, not in JVM flags.
 If most request-scoped objects die young, caches and queues are bounded, ThreadLocals are cleaned up, large payloads 
 are controlled, and GC metrics are correlated with production behavior, the JVM can do its job efficiently :)
-
 
 
 

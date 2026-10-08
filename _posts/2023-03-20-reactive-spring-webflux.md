@@ -3,7 +3,11 @@ layout: post
 title: The Rise of Reactive Programming with Spring WebFlux - A Game Changer or Overkill?
 date: 2023-10-18 11:59:00-0400
 description: Reactive Programming and Spring WebFlux
-tags: 
+tags:
+  - java
+  - reactive programming
+  - spring webflux
+  - software architecture
 categories: 
 giscus_comments: false 
 related_posts: false

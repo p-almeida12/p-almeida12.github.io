@@ -1,9 +1,13 @@
 ---
 layout: post
 title: Elasticsearch - My homework
-date: 2025-11-30 10:59:00-0400
+date: 2025-01-05 10:59:00-0400
 description: Discovering Elasticsearch and researching how it works in production systems, what are common problems and how to fix them.
 tags:
+  - elasticsearch
+  - apache lucene
+  - search
+  - distributed systems
 categories:
 giscus_comments: false
 related_posts: false
@@ -585,7 +589,6 @@ me avoid common errors when I eventually do use it in production. If I will ever
 I may not ever use Elasticsearch in production, but I always like to understand how things work. I think that 
 understanding the inner workings of a technology can help me make better decisions about when and how to use it, 
 even if I never end up using it directly.
-
 
 
 

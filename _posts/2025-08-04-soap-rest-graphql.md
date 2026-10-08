@@ -4,6 +4,10 @@ title: SOAP, REST, and GraphQL - My experience
 date: 2025-08-04 10:59:00-0400
 description: SOAP, REST, and GraphQL - trying to compare the uncomparable.
 tags:
+  - apis
+  - soap
+  - rest
+  - graphql
 categories:
 giscus_comments: false
 related_posts: false
@@ -441,4 +445,3 @@ sleek and efficient, but requiring a bit more engineering under the hood to reac
 <span style="margin-left: 10px;"></span>
 The lesson?
 Each has its place — the key is knowing when to drive which one.
-

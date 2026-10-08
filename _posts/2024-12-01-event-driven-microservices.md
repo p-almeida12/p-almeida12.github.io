@@ -4,6 +4,10 @@ title: Event-Driven Microservices - Kafka and RabbitMQ
 date: 2024-12-01 10:59:00-0400
 description: Event-Driven Microservices with Kafka and RabbitMQ.
 tags:
+  - microservices
+  - event-driven architecture
+  - apache kafka
+  - rabbitmq
 categories:
 giscus_comments: false
 related_posts: false
@@ -583,7 +587,6 @@ think about your architecture, your team’s expertise, and the future scale of 
 Maybe it’s time to build a proof of concept and see these tools in action. Because at the end of the day, nothing 
 beats real-world experimentation when it comes to figuring out what works best. This is one of the things that I learned 
 in my journey as a developer, the best way to learn is by doing and discussing with experienced people.
-
 
 
 

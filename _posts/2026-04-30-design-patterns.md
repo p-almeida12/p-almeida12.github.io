@@ -4,6 +4,10 @@ title: Design Patterns I Use in Backend Java
 date: 2026-04-30 10:59:00-0400
 description: A practical overview of core design patterns in backend Java with simple examples.
 tags:
+  - java
+  - design patterns
+  - software design
+  - object-oriented programming
 categories:
 giscus_comments: false
 related_posts: false

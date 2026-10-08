@@ -4,6 +4,10 @@ title: Big O Notation for Developers
 date: 2024-06-02 10:59:00-0400
 description: Big O Notation and code efficiency.
 tags:
+  - algorithms
+  - data structures
+  - big o notation
+  - software engineering
 categories:
 giscus_comments: false
 related_posts: false
@@ -316,7 +320,6 @@ have in their toolkit. It promotes high-quality code that's not only efficient a
 and robust. So, next time you're writing or reviewing code, take a moment to consider the Big O implications. 
 Feel free to check out these cheat sheets for a quick reference to common Big O complexities! 
 [https://www.bigocheatsheet.com/](https://www.bigocheatsheet.com/) and [https://gist.github.com/marcinjackowiak/85f144d0f1ed5fd066d4d2a34961497c/](https://gist.github.com/marcinjackowiak/85f144d0f1ed5fd066d4d2a34961497c)
-
 
 
 
